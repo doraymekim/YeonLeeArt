@@ -1217,13 +1217,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@notionhq/client@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "@notionhq/client@npm:2.3.0"
-  dependencies:
-    "@types/node-fetch": "npm:^2.5.10"
-    node-fetch: "npm:^2.6.1"
-  checksum: 10c0/48af6e0d44c97892374755fbfbca6eb2f27e5ad8baabc511d48ec02cc7d6a1488b1692423ff426cb77c39ac5b4c9bd5498d4b6bc40e295d149ff3d24ce3d8ecc
+"@notionhq/client@npm:^5.23.2":
+  version: 5.23.2
+  resolution: "@notionhq/client@npm:5.23.2"
+  checksum: 10c0/81bb34f4c0ad4858f8e8d304e02a1eaa382298ba41e5b15bebb7145d32faa80809b4a0ddd610c4659d1f93bda280ebce90e1cdbf44cb914ffdc57e8261640c44
   languageName: node
   linkType: hard
 
@@ -1556,16 +1553,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-fetch@npm:^2.5.10":
-  version: 2.6.12
-  resolution: "@types/node-fetch@npm:2.6.12"
-  dependencies:
-    "@types/node": "npm:*"
-    form-data: "npm:^4.0.0"
-  checksum: 10c0/7693acad5499b7df2d1727d46cff092a63896dc04645f36b973dd6dd754a59a7faba76fcb777bdaa35d80625c6a9dd7257cca9c401a4bab03b04480cda7fd1af
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:*":
   version: 22.10.7
   resolution: "@types/node@npm:22.10.7"
@@ -1842,7 +1829,7 @@ __metadata:
     "@astrojs/check": "npm:^0.9.4"
     "@astrojs/tailwind": "npm:^6.0.2"
     "@iconify-json/mdi": "npm:^1.2.3"
-    "@notionhq/client": "npm:^2.3.0"
+    "@notionhq/client": "npm:^5.23.2"
     "@types/probe-image-size": "npm:^7.2.5"
     astro: "npm:^5.10.2"
     astro-icon: "npm:^1.1.5"
@@ -4742,7 +4729,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.1, node-fetch@npm:^2.7.0":
+"node-fetch@npm:^2.7.0":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
