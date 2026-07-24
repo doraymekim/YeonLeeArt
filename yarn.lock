@@ -1851,7 +1851,7 @@ __metadata:
     prettier: "npm:^3.6.2"
     prettier-plugin-astro: "npm:^0.14.1"
     prettier-plugin-tailwindcss: "npm:^0.6.13"
-    probe-image-size: "npm:^7.2.3"
+    probe-image-size: "npm:^7.3.0"
     tailwindcss: "npm:^3.4.17"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -5443,14 +5443,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"probe-image-size@npm:^7.2.3":
-  version: 7.2.3
-  resolution: "probe-image-size@npm:7.2.3"
+"probe-image-size@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "probe-image-size@npm:7.3.0"
   dependencies:
     lodash.merge: "npm:^4.6.2"
     needle: "npm:^2.5.2"
     stream-parser: "npm:~0.3.1"
-  checksum: 10c0/bebe3b050889794565b66ea9749cb21fee4f3e99fea41a328e39f2929f2432ebb50ac974148c35c66dec5becc849b3185a7a6f39d3ff75247e8be0a2759c9627
+  checksum: 10c0/92a1c11fbb6149c0122852a179a54d9edda9f7a5084e837aa529d30b7a213120771356e72547bb18a4e183c8896b83b53380b232ed0a97594d2d80c97cf9a127
   languageName: node
   linkType: hard
 
