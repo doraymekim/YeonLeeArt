@@ -125,6 +125,16 @@ const WHISTLE_SERIES_STATEMENT_KO = `아들이 녹음하던 맑고 섬세한 휘
 
 const WHISTLE_SERIES_STATEMENT_EN = `A visual journey born from the delicate sound of my son recording his whistles. Energetic layers of color and emotion harmonize upon the canvas, capturing a luminous, musical atmosphere where delicate tones converse and resonate beyond words.`;
 
+// --- "YEOREUM" STATEMENTS ---
+const YEOREUM_STATEMENT_KO = `여름(YeoReum), 가득 찬 생명력과 눈부신 빛이 온 세상을 뒤덮는 계절. 녹음이 짙어지는 숲속을 채우는 바람, 나비들의 활기찬 날갯짓, 그리고 만개한 꽃들이 이루는 강렬한 스펙트럼 속에서 자연이 가진 무한한 에너지를 느낀다. 뜨겁지만 평화롭고, 화려하지만 포근한 여름의 순수한 순간을 화폭에 담았다.`;
+
+const YEOREUM_STATEMENT_EN = `YeoReum (Summer)—a season where bursting vitality and dazzling light envelop the entire world. Amidst the lush green forests, the whisper of the breeze, the lively flutter of butterflies, and the vibrant spectrum of blooming flowers, one can feel nature’s infinite energy. This canvas captures the pure essence of summer: warm yet serene, radiant yet deeply comforting.`;
+
+// --- "BREATH" STATEMENTS ---
+const BREATH_STATEMENT_KO = `옐로우스톤 여행 중 가이저를 보며 느꼈던 마음. '아, 내가 발을 딛고 서 있는 이 지구도 나처럼 부지런히 숨을 쉬고 있구나.' 그것은 마치 살아있음을 알리는 거대한 호흡과도 같았다. 고온성 미생물들이 자신들만의 디자인과 칼라로 수를 놓은 듯, 마치 다른 행성에 온 듯한 착각마저 불러일으킬 정도로 오묘하고 신비로운 그랜드 프리즈매틱 가이저. 과거에도, 지금도, 그리고 앞으로도 계속 살아 숨 쉴 아름다운 지구를 직접 보며 느꼈던 깊은 울림과 감동을 '숨'이라는 언어로 표현했다.`;
+
+const BREATH_STATEMENT_EN = `While watching the geysers during a trip to Yellowstone, a realization washed over me: the Earth beneath my feet is busily breathing, just like I am. It felt like a grand pulse announcing that our planet is truly alive. The Grand Prismatic Spring—where extremophile microorganisms seem to embroider the terrain with their own colors and designs—felt so mysterious and surreal, as if I had stepped onto another planet. This piece captures "Breath"—a shared connection with our beautiful, living Earth, which has breathed in the past, breathes now, and will continue to breathe into the future.`;
+
 // --------------------------------------------------------------------------
 // EXPORTED METADATA REGISTRY
 // --------------------------------------------------------------------------
@@ -471,5 +481,25 @@ export const ARTWORK_METADATA: Record<string, ArtworkDetails> = {
     exhibition: '',
     statementEn: WHISTLE_SERIES_STATEMENT_EN,
     statementKo: WHISTLE_SERIES_STATEMENT_KO,
+  },
+  'yeoreum': {
+    title: 'YeoReum',
+    year: '2025',
+    price: '$75,000',
+    dimensions: '60 x 72 in (152 x 183 cm)',
+    medium: 'Acrylic on Canvas 1.5 depth',
+    exhibition: '',
+    statementEn: YEOREUM_STATEMENT_EN,
+    statementKo: YEOREUM_STATEMENT_KO,
+  },
+  'breath': {
+    title: 'Breath',
+    year: '2021',
+    price: 'Not for sale',
+    dimensions: '22 x 28 in (56 x 71 cm)',
+    medium: 'Acrylic on Acrylic Pad',
+    exhibition: 'Art Show Intl Solo Exhibition (Dec 2021 - Feb 2023)',
+    statementEn: BREATH_STATEMENT_EN,
+    statementKo: BREATH_STATEMENT_KO,
   },
 };
