@@ -1,71 +1,171 @@
 ---
-import { Img } from 'astro-imagetools/components';
 import Layout from '../layouts/Layout.astro';
-import Footer from '../components/Footer.astro';
 import { PERSONAL_INFO } from '../consts';
 
-const { role, name, avatar, contact, about } = PERSONAL_INFO;
-
+const { role, name, about } = PERSONAL_INFO;
 const title = `${name} - About`;
+
+// Fetch images dynamically from public directory using Vite glob
+const publicImages = Object.keys(
+  import.meta.glob('/public/*.{jpg,jpeg,png,webp,gif,JPG,JPEG,PNG,WEBP,GIF}', { eager: true })
+).map((filePath) => {
+  const fileName = filePath.split('/').pop() || '';
+  const label = fileName.replace(/\.[^.]+$/, '');
+  return {
+    label,
+    href: filePath.replace('/public', ''),
+  };
+});
+
+// 1. Locate the wide ocean shot for background
+const oceanBgObj = publicImages.find((img) => {
+  const normalized = img.label.toLowerCase().replace(/[-_]/g, ' ');
+  return normalized.includes('photo 2') || normalized.includes('headshot photo 2');
+});
+
+const oceanBgUrl = encodeURI(oceanBgObj?.href || '/Yeon Joo Lee Headshot Photo 2.jpg');
+
+// 2. Foreground slideshow images
+const targetPortraitLabels = [
+  'balloon trail mom',
+  'Bom and mom',
+  'italian journey mom',
+  'Yeon Joo Lee Headshot Photo'
+];
+
+const portraitImages = targetPortraitLabels
+  .map((label) => 
+    publicImages.find((img) => 
+      img.label.toLowerCase().replace(/[-_]/g, ' ') === label.toLowerCase().replace(/[-_]/g, ' ')
+    )
+  )
+  .filter(Boolean);
+
+const fallbackPortrait = portraitImages[0]?.href || publicImages[0]?.href || '';
+const currentYear = new Date().getFullYear();
 ---
 
 <Layout title={title}>
-  <div class="flex h-screen flex-col justify-between py-4 sm:py-6 lg:py-8">
-    <main class="mb-auto flex flex-col items-center align-middle">
-      <div class="my-8 sm:my-12">
-        <h2
-          class="mb-4 text-center text-2xl font-semibold text-gray-800 md:mb-6 lg:text-3xl dark:text-white"
-        >
-          About me??
-        </h2>
-      </div>
+  <div class="min-h-screen bg-[#f7f0e8] text-slate-900 flex flex-col justify-between selection:bg-[#dfcbb3]">
+    
+    <!-- Header -->
+    <header class="mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-6 sm:px-8 lg:px-10">
+      <a href="/" class="text-sm font-semibold uppercase tracking-[0.25em] text-slate-800">
+        {name}
+      </a>
+      <nav class="flex items-center gap-6 text-sm text-slate-600">
+        <a href="/" class="transition hover:text-slate-950">Home</a>
+      </nav>
+    </header>
 
-      <div
-        class="mx-4 w-fit rounded-xl bg-white py-4 sm:py-8 dark:bg-slate-900"
-      >
-        <div class="max-w-screen-lg px-4 md:px-8">
-          <div class="grid items-center gap-8 sm:grid-cols-2">
-            <div
-              class="flex flex-col items-center justify-center py-8 sm:items-start sm:py-24"
-            >
-              <p
-                class="mb-4 text-sm font-semibold uppercase text-indigo-500 md:text-base"
-              >
-                {role}
-              </p>
-              <h1
-                class="mb-4 text-center text-2xl font-bold text-gray-800 sm:text-left md:text-3xl dark:text-gray-200"
-              >
-                {name}
-              </h1>
-
-              <p class="mb-8 text-center text-gray-500 sm:text-left md:text-lg">
-                {about}
-              </p>
-
+    <!-- Main Content Container stretched downward -->
+    <main class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-6 pt-2 pb-2 sm:px-8 lg:px-10">
+      <section class="relative flex-1 flex flex-col justify-center overflow-hidden rounded-[2rem] border border-[#d8c4ab]/80 shadow-[0_20px_80px_rgba(15,23,42,0.12)] p-4 sm:p-8 lg:p-8 min-h-[680px]">
+        
+        <!-- Ocean Background Image Layer -->
+        <div class="absolute inset-0 z-0 overflow-hidden">
+          <img 
+            src={oceanBgUrl} 
+            alt="Ocean View Background" 
+            class="h-full w-full object-cover object-center filter brightness-100 contrast-[1.02]"
+          />
+          <!-- Gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-r from-[#f7f0e8]/90 via-[#f7f0e8]/40 to-transparent"></div>
+        </div>
+        
+        <!-- Grid Split: 45% Left Column / 55% Right Column -->
+        <div class="relative z-10 grid items-stretch gap-8 lg:grid-cols-[45%_55%] w-full h-full min-h-[580px] sm:min-h-[680px]">
+          
+          <!-- Left Column (45%): Bio Details Anchored to Bottom-Left -->
+          <div class="flex flex-col justify-end lg:pr-6 pb-2">
+            <p class="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-slate-600">
+              {role}
+            </p>
+            <h1 class="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-5xl mb-5">
+              {name}
+            </h1>
+            <p class="text-base leading-7 text-slate-800 max-w-xl mb-8 font-normal">
+              {about}
+            </p>
+            
+            <!-- Action Buttons Row -->
+            <div class="flex items-center gap-3 flex-wrap">
+              <!-- Animated Back Button -->
               <a
-                href={contact}
-                class="inline-block rounded-lg bg-gray-200 px-8 py-3 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base"
-                >Contact</a
+                href="javascript:history.back()"
+                class="group inline-flex items-center gap-2 rounded-full border border-slate-950/20 bg-white/60 px-6 py-3 text-sm font-medium text-slate-900 transition-all duration-300 ease-out hover:bg-white/90 hover:shadow-md hover:-translate-y-0.5 backdrop-blur-md"
               >
-            </div>
-
-            <div
-              class="relative mx-auto h-fit max-w-xs overflow-hidden rounded-full bg-gray-100 object-cover object-center shadow-lg sm:max-w-md"
-            >
-              <Img
-                src={avatar}
-                alt="Portrait"
-                height={600}
-                width={600}
-                format="webp"
-              />
+                <span class="inline-block transition-transform duration-300 ease-out group-hover:-translate-x-1.5">←</span>
+                <span>Back</span>
+              </a>
+              <a
+                href={`mailto:${PERSONAL_INFO.contact || ''}`}
+                class="inline-block rounded-full bg-slate-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800 shadow-md"
+              >
+                Get in touch
+              </a>
             </div>
           </div>
+
+          <!-- Right Column (55%): Stretched Vertical Slideshow Container -->
+          <div class="relative flex items-center justify-center w-full h-[580px] sm:h-[680px] lg:h-[720px] overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/30 p-2 sm:p-3 backdrop-blur-sm shadow-xl">
+            <div class="relative flex items-center justify-center w-full h-full overflow-hidden rounded-[1.25rem] bg-[#efe5d8]/40 shadow-inner p-1">
+              {
+                portraitImages.length > 0 ? (
+                  portraitImages.map((img, index) => (
+                    <img
+                      src={encodeURI(img.href)}
+                      alt={img.label}
+                      class={`absolute inset-0 h-full w-full object-contain object-center p-1 transition-opacity duration-1000 ease-in-out ${
+                        index === 0 ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      data-portrait-slide
+                    />
+                  ))
+                ) : (
+                  <img
+                    src={encodeURI(fallbackPortrait)}
+                    alt="Portrait"
+                    class="h-full w-full object-contain object-center p-1"
+                  />
+                )
+              }
+            </div>
+          </div>
+
         </div>
-      </div>
+      </section>
     </main>
 
-    <Footer />
+    <!-- Cleaned Footer (Copyright Only) -->
+    <footer class="mx-auto flex w-full max-w-[1600px] items-center justify-center px-6 py-6 text-xs text-slate-600">
+      <p>© {currentYear} {name}. All rights reserved.</p>
+    </footer>
   </div>
+
+  <!-- Client-Side Fading Script -->
+  <script>
+    function setupSlideshow() {
+      const slides = document.querySelectorAll<HTMLImageElement>('[data-portrait-slide]');
+      if (slides.length <= 1) return;
+
+      let currentIndex = 0;
+
+      setInterval(() => {
+        // Fade out active slide
+        slides[currentIndex].classList.remove('opacity-100');
+        slides[currentIndex].classList.add('opacity-0');
+        
+        // Move to next slide
+        currentIndex = (currentIndex + 1) % slides.length;
+        
+        // Fade in new slide
+        slides[currentIndex].classList.remove('opacity-0');
+        slides[currentIndex].classList.add('opacity-100');
+      }, 4500);
+    }
+
+    setupSlideshow();
+    document.addEventListener('astro:page-load', setupSlideshow);
+  </script>
 </Layout>
