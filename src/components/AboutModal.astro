@@ -1,0 +1,214 @@
+---
+interface Props {
+  carouselImages: (string | undefined)[];
+  bgImage?: string;
+}
+
+const { carouselImages = [], bgImage } = Astro.props;
+---
+
+<div 
+  id="about-modal" 
+  class="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 py-8 sm:p-6 lg:p-8 bg-slate-950/75 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 overflow-y-auto"
+  role="dialog"
+  aria-modal="true"
+>
+  <div 
+    id="about-modal-card"
+    class="relative w-full max-w-5xl lg:max-w-6xl max-h-[85vh] sm:max-h-[88vh] overflow-y-auto rounded-[2.5rem] bg-[#fdfbf7] border border-[#d8c4ab]/60 p-6 sm:p-8 lg:p-10 shadow-2xl transition-all duration-300 scale-95 flex flex-col justify-start lg:justify-end shrink-0"
+  >
+    {bgImage && (
+      <img 
+        src={bgImage} 
+        alt="" 
+        class="absolute -top-28 sm:-top-44 lg:-top-64 inset-x-0 h-[160%] w-full object-cover object-top opacity-15 pointer-events-none select-none mix-blend-multiply" 
+      />
+    )}
+
+    <button 
+      id="close-about-modal" 
+      type="button" 
+      class="absolute top-5 right-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-800 shadow-md backdrop-blur-md transition hover:bg-slate-900 hover:text-white"
+      aria-label="Close modal"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="relative z-10 grid grid-cols-1 items-start lg:items-end gap-6 lg:grid-cols-12 lg:gap-10">
+      <div class="lg:col-span-7 flex flex-col justify-start lg:justify-end text-left">
+        
+        <!-- Header with Language Flags Toggle -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-2 pr-10 sm:pr-0">
+          <span class="font-sans-tiffany inline-block text-xs font-semibold uppercase tracking-[0.35em] text-[#81d8d0]">
+            About the Artist
+          </span>
+
+          <div class="flex items-center gap-1.5 bg-[#efe8de]/80 p-1 rounded-full border border-[#d8c4ab]/50 shadow-inner">
+            <button 
+              type="button" 
+              id="bio-lang-en" 
+              class="bio-lang-btn active font-sans-tiffany inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-[#0f172a] text-white shadow-sm transition duration-200"
+            >
+              <span>🇺🇸</span> EN
+            </button>
+            <button 
+              type="button" 
+              id="bio-lang-ko" 
+              class="bio-lang-btn font-paperlogy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-[#475569] hover:text-[#0f172a] transition duration-200"
+            >
+              <span>🇰🇷</span> KO
+            </button>
+          </div>
+        </div>
+        
+        <h2 class="font-serif-tiffany mb-4 text-3xl sm:text-4xl lg:text-5xl font-light leading-none text-[#0f172a]">
+          Yeon Joo Lee
+        </h2>
+
+        <!-- English Statement -->
+        <div id="bio-text-en" class="font-sans-tiffany text-sm sm:text-base font-normal leading-relaxed text-[#0f172a] transition-opacity duration-300">
+          <p>
+            Yeon Joo Lee creates textured, vibrant compositions that celebrate memory, nature, and the gentle comfort of home. Through intricate pointillism and rich layering, her artwork invites viewers into serene, dreamy landscapes filled with warmth and emotion.
+          </p>
+        </div>
+
+        <!-- Korean Statement -->
+        <div id="bio-text-ko" class="hidden font-paperlogy text-sm sm:text-base font-normal leading-relaxed text-[#0f172a] transition-opacity duration-300 break-keep space-y-3">
+          <p>
+            난 사랑하는 이들을 위해 요리하는걸 좋아하는 사람이다. 가족을 포함하여 어떤 대상을 위해 식탁을 차린다는것은 정성이란 그릇에 사랑과 관심을 담아내는 것이라 믿기에 때론 번거로울때도 있지만 나에겐 참 의미있는 일이 아닐 수없다.
+          </p>
+          <p>
+            이런 나에게 ‘그림을 그린다는 것’은 더 많은 사람들을 위해 식탁을 차리는 것과 다름이 없다. 정성으로 만든 나의 음식을 통해 힐링을 전하고 싶은 마음처럼 나의 그림으로 좋은 에너지와 행복함을 전하고 싶기에 흥미로운 소재를 생각하고 색을 고르고 나만의 터치로 캔번스를 채우며 기도를 더한다. 내 그림 앞에 선 모든 이들에게 작게나마 위로가 되고 힘이 되었으면 좋겠다고. 그래서 난 잘 그렸다는 평가보다는 그림이 밝고 정성이 가득해서 감동받았다. 다음 그림은 또 어떤 좋은 에너지를 받게될지 기대가 되고 기다려진다는 평이 더 반갑고 고맙다.
+          </p>
+          <p>
+            지금까지의 삶의 경험과 적지않은 곳들을 여행하며 직접 보고 느꼈던 감동을 섞어 나만의 레시피로 만들어 나를 통한 해석과 붓터치로 양념을 해서 캔파스라는 그릇에 정성을 들인 그림을 담아낸다. 이 작업을 통해 풍요로움과 아름다움 그리고 감사함을 표현하고자 하는것, 내가 붓을 잡는 이유이다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bio Slideshow -->
+      <div class="lg:col-span-5 flex justify-center items-end lg:self-end mt-2 sm:mt-0">
+        <div class="relative aspect-[3/4] w-full max-w-sm max-h-[50vh] overflow-hidden rounded-2xl bg-[#efe8de] shadow-2xl border border-[#d8c4ab]/40">
+          {carouselImages.map((src, index) => (
+            src ? (
+              <img 
+                src={src} 
+                alt={`Yeon Joo Lee portrait ${index + 1}`} 
+                class={`bio-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100' : 'opacity-0'}`} 
+              />
+            ) : null
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initAboutModal() {
+    const openBtn = document.getElementById('open-about-modal');
+    const closeBtn = document.getElementById('close-about-modal');
+    const modal = document.getElementById('about-modal');
+    const modalCard = document.getElementById('about-modal-card');
+    const slides = document.querySelectorAll('.bio-slide');
+
+    // Language Toggle Elements
+    const btnEn = document.getElementById('bio-lang-en');
+    const btnKo = document.getElementById('bio-lang-ko');
+    const textEn = document.getElementById('bio-text-en');
+    const textKo = document.getElementById('bio-text-ko');
+
+    function switchLanguage(lang: 'en' | 'ko') {
+      if (lang === 'en') {
+        textKo?.classList.add('hidden');
+        textEn?.classList.remove('hidden');
+        
+        btnEn?.classList.replace('text-[#475569]', 'text-white');
+        btnEn?.classList.add('bg-[#0f172a]', 'shadow-sm', 'font-semibold');
+        btnEn?.classList.remove('hover:text-[#0f172a]', 'font-medium');
+
+        btnKo?.classList.remove('bg-[#0f172a]', 'text-white', 'shadow-sm', 'font-semibold');
+        btnKo?.classList.add('text-[#475569]', 'hover:text-[#0f172a]', 'font-medium');
+      } else {
+        textEn?.classList.add('hidden');
+        textKo?.classList.remove('hidden');
+        
+        btnKo?.classList.replace('text-[#475569]', 'text-white');
+        btnKo?.classList.add('bg-[#0f172a]', 'shadow-sm', 'font-semibold');
+        btnKo?.classList.remove('hover:text-[#0f172a]', 'font-medium');
+
+        btnEn?.classList.remove('bg-[#0f172a]', 'text-white', 'shadow-sm', 'font-semibold');
+        btnEn?.classList.add('text-[#475569]', 'hover:text-[#0f172a]', 'font-medium');
+      }
+      
+      // Reset scroll to top of card whenever language changes so user doesn't get lost
+      if (modalCard) modalCard.scrollTop = 0;
+    }
+
+    btnEn?.addEventListener('click', () => switchLanguage('en'));
+    btnKo?.addEventListener('click', () => switchLanguage('ko'));
+
+    let slideIndex = 0;
+    let slideInterval: number | null = null;
+
+    function startCarousel() {
+      if (slides.length <= 1) return;
+      slideInterval = window.setInterval(() => {
+        slides[slideIndex]?.classList.remove('opacity-100');
+        slides[slideIndex]?.classList.add('opacity-0');
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex]?.classList.remove('opacity-0');
+        slides[slideIndex]?.classList.add('opacity-100');
+      }, 3500);
+    }
+
+    function stopCarousel() {
+      if (slideInterval !== null) {
+        clearInterval(slideInterval);
+        slideInterval = null;
+      }
+    }
+
+    function openModal() {
+      if (!modal) return;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      modalCard?.classList.remove('scale-95');
+      modalCard?.classList.add('scale-100');
+      document.body.style.overflow = 'hidden';
+      if (modalCard) modalCard.scrollTop = 0;
+      startCarousel();
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove('opacity-100');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalCard?.classList.remove('scale-100');
+      modalCard?.classList.add('scale-95');
+      document.body.style.overflow = '';
+      stopCarousel();
+    }
+
+    openBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  }
+
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initAboutModal();
+  } else {
+    document.addEventListener('DOMContentLoaded', initAboutModal);
+  }
+
+  document.addEventListener('astro:page-load', initAboutModal);
+</script>

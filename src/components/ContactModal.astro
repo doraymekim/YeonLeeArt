@@ -1,0 +1,171 @@
+---
+// Replace these placeholders with your actual contact details
+const EMAIL = "yeonjlart@gmail.com";
+const INSTAGRAM_HANDLE = "@yeonjlart";
+const INSTAGRAM_URL = "https://www.instagram.com/yeonjlart/";
+---
+
+<div 
+  id="contact-modal" 
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"
+  role="dialog"
+  aria-modal="true"
+>
+  <div 
+    id="contact-modal-card"
+    class="relative w-full max-w-lg overflow-hidden rounded-[2rem] bg-[#fdfbf7] border border-[#d8c4ab]/80 p-6 sm:p-8 shadow-2xl transition-all duration-300 scale-95 flex flex-col justify-between"
+  >
+    <!-- Decorative background glow -->
+    <div class="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-[#81d8d0]/20 blur-3xl pointer-events-none"></div>
+
+    <button 
+      id="close-contact-modal" 
+      type="button" 
+      class="absolute top-5 right-5 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-[#efe8de]/80 text-slate-800 shadow-sm backdrop-blur-md transition hover:bg-slate-900 hover:text-white"
+      aria-label="Close modal"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <!-- Header -->
+    <div class="relative z-10 text-left mb-6">
+      <span class="font-sans-tiffany mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.35em] text-[#81d8d0]">
+        Inquiries & Commissions
+      </span>
+      <h3 class="font-serif-tiffany text-3xl sm:text-4xl font-light text-[#0f172a]">
+        Get in Touch
+      </h3>
+    </div>
+
+    <!-- Bilingual Note -->
+    <div class="relative z-10 space-y-3 mb-8 border-y border-[#d8c4ab]/40 py-4">
+      <p class="font-sans-tiffany text-xs sm:text-sm text-[#0f172a] leading-relaxed font-normal">
+        For artwork acquisition, custom commissions, or exhibition opportunities, please reach out directly.
+      </p>
+      <p class="font-paperlogy text-xs sm:text-sm text-[#475569] leading-relaxed font-normal break-keep">
+        작품 소장, 주문 제작 및 전시 관련 문의는 아래 이메일이나 소셜 미디어를 통해 연락해 주시기 바랍니다.
+      </p>
+    </div>
+
+    <!-- Contact Action Cards -->
+    <div class="relative z-10 flex flex-col gap-3">
+      <!-- Email Box with Copy Feature -->
+      <div class="flex items-center justify-between rounded-xl bg-[#efe8de]/60 border border-[#d8c4ab]/50 p-3.5 transition hover:border-[#81d8d0]">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0f172a] text-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div class="truncate">
+            <span class="block font-sans-tiffany text-[10px] uppercase tracking-wider text-[#475569] font-semibold">Email</span>
+            <a href={`mailto:${EMAIL}`} class="font-sans-tiffany text-sm font-medium text-[#0f172a] hover:underline truncate block">
+              {EMAIL}
+            </a>
+          </div>
+        </div>
+
+        <button 
+          type="button" 
+          id="copy-email-btn"
+          data-email={EMAIL}
+          class="font-sans-tiffany shrink-0 rounded-lg bg-white border border-[#d8c4ab] px-3 py-1.5 text-xs font-medium text-[#0f172a] shadow-sm transition hover:bg-[#81d8d0] hover:border-[#81d8d0] hover:text-white"
+        >
+          Copy
+        </button>
+      </div>
+
+      <!-- Instagram/Social Box -->
+      <a 
+        href={INSTAGRAM_URL} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="group flex items-center justify-between rounded-xl bg-[#efe8de]/60 border border-[#d8c4ab]/50 p-3.5 transition hover:border-[#81d8d0] hover:bg-white/80"
+      >
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block font-sans-tiffany text-[10px] uppercase tracking-wider text-[#475569] font-semibold">Instagram</span>
+            <span class="font-sans-tiffany text-sm font-medium text-[#0f172a] group-hover:text-rose-600 transition">
+              {INSTAGRAM_HANDLE}
+            </span>
+          </div>
+        </div>
+        <span class="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function initContactModal() {
+    const openBtn = document.getElementById('open-contact-modal');
+    const closeBtn = document.getElementById('close-contact-modal');
+    const modal = document.getElementById('contact-modal');
+    const modalCard = document.getElementById('contact-modal-card');
+    const copyBtn = document.getElementById('copy-email-btn');
+
+    function openModal() {
+      if (!modal) return;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      modalCard?.classList.remove('scale-95');
+      modalCard?.classList.add('scale-100');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.remove('opacity-100');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalCard?.classList.remove('scale-100');
+      modalCard?.classList.add('scale-95');
+      document.body.style.overflow = '';
+    }
+
+    openBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Copy Email to Clipboard logic
+    copyBtn?.addEventListener('click', async () => {
+      const email = copyBtn.getAttribute('data-email');
+      if (!email) return;
+      try {
+        await navigator.clipboard.writeText(email);
+        const originalText = copyBtn.innerText;
+        copyBtn.innerText = 'Copied!';
+        copyBtn.classList.add('bg-[#10b981]', 'text-white', 'border-[#10b981]');
+        setTimeout(() => {
+          copyBtn.innerText = originalText;
+          copyBtn.classList.remove('bg-[#10b981]', 'text-white', 'border-[#10b981]');
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy email', err);
+      }
+    });
+  }
+
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initContactModal();
+  } else {
+    document.addEventListener('DOMContentLoaded', initContactModal);
+  }
+
+  document.addEventListener('astro:page-load', initContactModal);
+</script>

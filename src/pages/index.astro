@@ -3,11 +3,12 @@ import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import Layout from '../layouts/Layout.astro';
 import Footer from '../components/Footer.astro';
+import AboutModal from '../components/AboutModal.astro';
 import { PERSONAL_INFO } from '../consts';
 import { ARTWORK_METADATA } from '../data/artworks.ts';
+import ContactModal from '../components/ContactModal.astro'; // <-- Add this line
 
 const publicDir = path.join(process.cwd(), 'public');
-
 
 // Helper to format artwork item with full metadata payload & fallback compatibility keys
 const formatArtworkPayload = (img: { label: string; href: string }) => {
@@ -78,7 +79,7 @@ const publicImages = allPublicImages
 const findCollectionImages = (labels: string[]) =>
   labels
     .map((label) => publicImages.find((img) => img.label.toLowerCase() === label.toLowerCase()))
-    .filter(Boolean);
+    .filter(Boolean) as { label: string; href: string }[];
 
 // Collections
 const balloonTrailImages = findCollectionImages([
@@ -215,13 +216,11 @@ const galleryImages = publicImages.map((image) => {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
- <!-- Hero Section -->
+  <!-- Hero Section -->
   <section class="w-full bg-[#fdfbf7] pt-2 pb-12 sm:pt-4 sm:pb-16 lg:pt-6 lg:pb-16">
     <div class="mx-auto max-w-[1600px] px-6 sm:px-8 lg:px-10">
-      <!-- Changed items-stretch to items-center to center left and right columns vertically -->
       <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
         
-        <!-- Added justify-center so text content centers neatly inside its column -->
         <div class="flex flex-col items-center justify-center text-center lg:items-start lg:text-left">
           <span class="font-sans-tiffany mb-4 inline-block text-xs font-semibold uppercase tracking-[0.35em] text-[#81d8d0]">
             Artist Spotlight
@@ -243,7 +242,13 @@ const galleryImages = publicImages.map((image) => {
             >
               About
             </button>
-
+<button 
+              type="button" 
+              id="open-contact-modal"
+              class="font-sans-tiffany rounded-full bg-[#81d8d0] border border-[#81d8d0] px-8 py-3.5 text-sm font-semibold text-[#0f172a] shadow-[0_10px_25px_rgba(129,216,208,0.25)] transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:border-[#d8c4ab]"
+            >
+              Contact
+            </button>
             <a 
               href="#gallery" 
               id="explore-link"
@@ -281,7 +286,7 @@ const galleryImages = publicImages.map((image) => {
     </div>
   </section>
 
-  <!-- Flagship Series Spotlight: Whistle Collection -->
+ <!-- Flagship Series Spotlight: Whistle Collection -->
   <section class="mx-auto max-w-[1600px] px-6 sm:px-8 lg:px-10 mb-12 lg:mb-16">
     <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0f172a] via-[#1a2436] to-[#0f172a] text-white p-8 sm:p-12 lg:p-16 shadow-[0_25px_70px_rgba(15,23,42,0.25)] border border-[#81d8d0]/20">
       
@@ -360,286 +365,175 @@ const galleryImages = publicImages.map((image) => {
   </section>
 
   <!-- Main Gallery Section -->
-<main class="mx-auto flex max-w-[1600px] flex-col gap-10 px-6 pb-16 sm:px-8 lg:px-10">
-  <section id="gallery" class="rounded-[2rem] border border-[#d8c4ab]/70 bg-[linear-gradient(135deg,_#fefcf8_0%,_#f8efe3_100%)] p-6 shadow-[0_20px_80px_rgba(15,23,42,0.06)] sm:p-8 lg:p-10">
-    <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p class="font-sans-tiffany text-xs font-semibold uppercase tracking-[0.35em] text-[#81d8d0]">
-          Selected works
-        </p>
-        <h2 class="font-serif-tiffany mt-2 text-3xl font-light text-[#0f172a] sm:text-4xl lg:text-5xl leading-tight">
-          A curated collection of statement pieces.
-        </h2>
+  <main class="mx-auto flex max-w-[1600px] flex-col gap-10 px-6 pb-16 sm:px-8 lg:px-10">
+    <section id="gallery" class="rounded-[2rem] border border-[#d8c4ab]/70 bg-[linear-gradient(135deg,_#fefcf8_0%,_#f8efe3_100%)] p-6 shadow-[0_20px_80px_rgba(15,23,42,0.06)] sm:p-8 lg:p-10">
+      <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="font-sans-tiffany text-xs font-semibold uppercase tracking-[0.35em] text-[#81d8d0]">
+            Selected works
+          </p>
+          <h2 class="font-serif-tiffany mt-2 text-3xl font-light text-[#0f172a] sm:text-4xl lg:text-5xl leading-tight">
+            A curated collection of statement pieces.
+          </h2>
+        </div>
       </div>
-    </div>
 
-    <!-- Grid with items-stretch to align card bottoms across rows -->
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-stretch grid-flow-dense">
-      {
-        galleryImages
-          .filter((image) => {
-            const label = image.label.toLowerCase();
+      <!-- Grid with items-stretch to align card bottoms across rows -->
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-stretch grid-flow-dense">
+        {
+          galleryImages
+            .filter((image) => {
+              const label = image.label.toLowerCase();
 
-            const isBalloonVariant = label.startsWith('balloon trail ') && label !== 'balloon trail';
-            const isKaleidoscopeVariant = label.startsWith('kaleidoscope ') && label !== 'kaleidoscope';
-            const isNocturneVariant = label.startsWith('nocturne ') && label !== 'nocturne';
-            const isWhistleVariant = label.startsWith('whistle ') && label !== 'whistle';
+              const isBalloonVariant = label.startsWith('balloon trail ') && label !== 'balloon trail';
+              const isKaleidoscopeVariant = label.startsWith('kaleidoscope ') && label !== 'kaleidoscope';
+              const isNocturneVariant = label.startsWith('nocturne ') && label !== 'nocturne';
+              const isWhistleVariant = label.startsWith('whistle ') && label !== 'whistle';
 
-            const isCactusVariant = label === 'cactus splendor';
-            const isJourneyVariant = label === 'italian journey';
-            const isHeartVariant = label === 'heart tree 2' || label === 'heart tree ii';
-            const isSeasonVariant = label === 'yeoreum';
+              const isCactusVariant = label === 'cactus splendor';
+              const isJourneyVariant = label === 'italian journey';
+              const isHeartVariant = label === 'heart tree 2' || label === 'heart tree ii';
+              const isSeasonVariant = label === 'yeoreum';
 
-            return (
-              !isBalloonVariant &&
-              !isKaleidoscopeVariant &&
-              !isNocturneVariant &&
-              !isWhistleVariant &&
-              !isCactusVariant &&
-              !isJourneyVariant &&
-              !isHeartVariant &&
-              !isSeasonVariant
-            );
-          })
-          .map((image) => {
-            const collectionTitle = image.displayLabel || image.label;
+              return (
+                !isBalloonVariant &&
+                !isKaleidoscopeVariant &&
+                !isNocturneVariant &&
+                !isWhistleVariant &&
+                !isCactusVariant &&
+                !isJourneyVariant &&
+                !isHeartVariant &&
+                !isSeasonVariant
+              );
+            })
+            .map((image) => {
+              const collectionTitle = image.displayLabel || image.label;
 
-            const isHorizontal =
-              image.label === "Bison's Honeymoon" ||
-              image.label === 'Cactus Magnum' ||
-              image.label === 'Camelia' ||
-              image.label === 'Dandelion' ||
-              image.label === 'Nocturne';
+              const isHorizontal =
+                image.label === "Bison's Honeymoon" ||
+                image.label === 'Cactus Magnum' ||
+                image.label === 'Camelia' ||
+                image.label === 'Dandelion' ||
+                image.label === 'Nocturne';
 
-            const isCollection = !!image.subGallery;
-            const isAnimatedCollection = isCollection && collectionTitle !== 'Cactus' && collectionTitle !== 'Nocturne';
-            const palette = collectionPalettes[collectionTitle] || collectionPalettes[image.label] || [];
+              const isCollection = !!image.subGallery;
+              const isAnimatedCollection = isCollection && collectionTitle !== 'Cactus' && collectionTitle !== 'Nocturne';
+              const palette = collectionPalettes[collectionTitle] || collectionPalettes[image.label] || [];
 
-            const itemsPayload = isCollection
-              ? image.subGallery.map(formatArtworkPayload)
-              : [formatArtworkPayload(image)];
+              const itemsPayload = isCollection
+                ? image.subGallery.map(formatArtworkPayload)
+                : [formatArtworkPayload(image)];
 
-            return (
-              <div class={`relative group/container flex flex-col h-full ${isHorizontal ? 'sm:col-span-2 lg:col-span-2' : ''}`}>
-                
-                {isCollection && (
-                  <>
-                    <div class="absolute inset-0 rounded-[1.75rem] bg-[#e2d3bf]/60 border border-[#c2b29c]/30 transition-transform duration-500 ease-out group-hover/container:rotate-2 group-hover/container:scale-[1.01]" />
-                    <div class="absolute inset-0 rounded-[1.75rem] bg-[#ebdccb] border border-[#d8c4ab]/60 transition-transform duration-500 ease-out group-hover/container:-rotate-1 group-hover/container:scale-[1.005]" />
-                  </>
-                )}
+              return (
+                <div class={`relative group/container flex flex-col h-full ${isHorizontal ? 'sm:col-span-2 lg:col-span-2' : ''}`}>
+                  
+                  {isCollection && (
+                    <>
+                      <div class="absolute inset-0 rounded-[1.75rem] bg-[#e2d3bf]/60 border border-[#c2b29c]/30 transition-transform duration-500 ease-out group-hover/container:rotate-2 group-hover/container:scale-[1.01]" />
+                      <div class="absolute inset-0 rounded-[1.75rem] bg-[#ebdccb] border border-[#d8c4ab]/60 transition-transform duration-500 ease-out group-hover/container:-rotate-1 group-hover/container:scale-[1.005]" />
+                    </>
+                  )}
 
-                <a
-                  href="#gallery"
-                  class="relative z-10 group/card flex flex-col h-full overflow-hidden rounded-[1.75rem] border border-[#d8c4ab]/80 bg-[#f8efe3] transition duration-300 shadow-sm hover:shadow-xl"
-                  data-gallery-trigger="true"
-                  data-gallery-type={isCollection ? 'subgallery' : 'image'}
-                  data-gallery-title={isCollection ? collectionTitle : image.label}
-                  data-gallery-src={image.href}
-                  data-gallery-items={JSON.stringify(itemsPayload)}
-                >
-                  <!-- FIXED HEIGHT IMAGE CONTAINER TO FORCE EXACT BASELINE MATCH -->
-                  <div class="relative w-full h-72 sm:h-80 lg:h-96 overflow-hidden leading-none bg-[#efe8de] shrink-0">
-                    {isAnimatedCollection ? (
-                      <div class="collection-slideshow relative h-full w-full">
-                        {image.subGallery.map((subItem, idx) => (
-                          <img
-                            src={subItem.href}
-                            alt={subItem.label}
-                            width="800"
-                            class={`card-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${idx === 0 ? 'opacity-100' : 'opacity-0'}`}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <img
-                        src={image.href}
-                        alt={collectionTitle}
-                        width="800"
-                        class="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
-                      />
-                    )}
-                  </div>
-
-                  {/* Standardized footer container */}
-                  <div class="p-5 shrink-0 mt-auto flex flex-col justify-between min-h-[110px]">
-                    <p class="font-serif-tiffany text-2xl font-light tracking-[-0.01em] text-[#0f172a] transition duration-300 leading-snug">
-                      {isCollection ? (
-                        <>
-                          <span>{collectionTitle} - </span>
-                          <span class="animate-collection-text font-normal">Collection</span>
-                        </>
+                  <a
+                    href="#gallery"
+                    class="relative z-10 group/card flex flex-col h-full overflow-hidden rounded-[1.75rem] border border-[#d8c4ab]/80 bg-[#f8efe3] transition duration-300 shadow-sm hover:shadow-xl"
+                    data-gallery-trigger="true"
+                    data-gallery-type={isCollection ? 'subgallery' : 'image'}
+                    data-gallery-title={isCollection ? collectionTitle : image.label}
+                    data-gallery-src={image.href}
+                    data-gallery-items={JSON.stringify(itemsPayload)}
+                  >
+                    <!-- FIXED HEIGHT IMAGE CONTAINER TO FORCE EXACT BASELINE MATCH -->
+                    <div class="relative w-full h-72 sm:h-80 lg:h-96 overflow-hidden leading-none bg-[#efe8de] shrink-0">
+                      {isAnimatedCollection ? (
+                        <div class="collection-slideshow relative h-full w-full">
+                          {image.subGallery.map((subItem, idx) => (
+                            <img
+                              src={subItem.href}
+                              alt={subItem.label}
+                              width="800"
+                              class={`card-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${idx === 0 ? 'opacity-100' : 'opacity-0'}`}
+                            />
+                          ))}
+                        </div>
                       ) : (
-                        <span class="group-hover/card:text-[#81d8d0] transition duration-300">{image.label}</span>
+                        <img
+                          src={image.href}
+                          alt={collectionTitle}
+                          width="800"
+                          class="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
+                        />
                       )}
-                    </p>
+                    </div>
 
-                    {isCollection ? (
-                      <div class="flex items-center justify-between gap-2 pt-2 mt-auto">
-                        <span class="font-sans-tiffany text-[10px] font-bold uppercase tracking-[0.2em] text-[#0f172a] bg-[#81d8d0]/30 border border-[#81d8d0]/60 px-2.5 py-0.5 rounded-full">
-                          Series • {image.subGallery.length} Studies
-                        </span>
-
-                        {palette.length > 0 && (
-                          <div class="flex items-center gap-1.5">
-                            {palette.map((swatch) => (
-                              <span 
-                                class="h-2.5 w-2.5 rounded-full border border-black/20 shadow-sm transition-transform duration-200 group-hover/card:scale-125" 
-                                style={`background-color: ${swatch.color}`} 
-                                title={swatch.name}
-                              />
-                            ))}
-                          </div>
+                    <!-- Standardized footer container -->
+                    <div class="p-5 shrink-0 mt-auto flex flex-col justify-between min-h-[110px]">
+                      <p class="font-serif-tiffany text-2xl font-light tracking-[-0.01em] text-[#0f172a] transition duration-300 leading-snug">
+                        {isCollection ? (
+                          <>
+                            <span>{collectionTitle} - </span>
+                            <span class="animate-collection-text font-normal">Collection</span>
+                          </>
+                        ) : (
+                          <span class="group-hover/card:text-[#81d8d0] transition duration-300">{image.label}</span>
                         )}
-                      </div>
-                    ) : (
-                      <p class="font-sans-tiffany text-[11px] font-medium uppercase tracking-[0.18em] text-[#475569] transition duration-300 group-hover/card:text-[#0f172a] pt-2 mt-auto">
-                        View Full Details
                       </p>
-                    )}
-                  </div>
-                </a>
-              </div>
-            );
-          })
-      }
-    </div>
-  </section>
-</main>
+
+                      {isCollection ? (
+                        <div class="flex items-center justify-between gap-2 pt-2 mt-auto">
+                          <span class="font-sans-tiffany text-[10px] font-bold uppercase tracking-[0.2em] text-[#0f172a] bg-[#81d8d0]/30 border border-[#81d8d0]/60 px-2.5 py-0.5 rounded-full">
+                            Series • {image.subGallery.length} Studies
+                          </span>
+
+                          {palette.length > 0 && (
+                            <div class="flex items-center gap-1.5">
+                              {palette.map((swatch) => (
+                                <span 
+                                  class="h-2.5 w-2.5 rounded-full border border-black/20 shadow-sm transition-transform duration-200 group-hover/card:scale-125" 
+                                  style={`background-color: ${swatch.color}`} 
+                                  title={swatch.name}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p class="font-sans-tiffany text-[11px] font-medium uppercase tracking-[0.18em] text-[#475569] transition duration-300 group-hover/card:text-[#0f172a] pt-2 mt-auto">
+                          View Full Details
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                </div>
+              );
+            })
+        }
+      </div>
+    </section>
+  </main>
 
   <Footer />
 
-  <!-- About Modal (Bio Popup) -->
-  <div 
-    id="about-modal" 
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-950/75 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"
-    role="dialog"
-    aria-modal="true"
-  >
-    <div 
-      id="about-modal-card"
-      class="relative w-full max-w-5xl lg:max-w-6xl max-h-[88vh] overflow-hidden rounded-[2.5rem] bg-[#fdfbf7] border border-[#d8c4ab]/60 p-6 sm:p-8 lg:p-10 shadow-2xl transition-all duration-300 scale-95 flex flex-col justify-end"
-    >
-      {bioBgImage && (
-        <img 
-          src={bioBgImage} 
-          alt="" 
-          class="absolute -top-28 sm:-top-44 lg:-top-64 inset-x-0 h-[160%] w-full object-cover object-top opacity-15 pointer-events-none select-none mix-blend-multiply" 
-        />
-      )}
-
-      <button 
-        id="close-about-modal" 
-        type="button" 
-        class="absolute top-5 right-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-slate-800 shadow-md backdrop-blur-md transition hover:bg-slate-900 hover:text-white"
-        aria-label="Close modal"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-
-      <div class="relative z-10 grid grid-cols-1 items-end gap-6 lg:grid-cols-12 lg:gap-10">
-        <div class="lg:col-span-7 flex flex-col justify-end text-left self-end">
-          <span class="font-sans-tiffany mb-2 inline-block text-xs font-semibold uppercase tracking-[0.35em] text-[#81d8d0]">
-            About the Artist
-          </span>
-          
-          <h2 class="font-serif-tiffany mb-3 text-3xl sm:text-4xl lg:text-5xl font-light leading-none text-[#0f172a]">
-            Yeon Joo Lee
-          </h2>
-
-          <div class="font-sans-tiffany text-sm sm:text-base font-normal leading-relaxed text-[#0f172a]">
-            <p>
-              Yeon Joo Lee creates textured, vibrant compositions that celebrate memory, nature, and the gentle comfort of home. Through intricate pointillism and rich layering, her artwork invites viewers into serene, dreamy landscapes filled with warmth and emotion.
-            </p>
-          </div>
-        </div>
-
-        <div class="lg:col-span-5 flex justify-center items-end self-end">
-          <div class="relative aspect-[3/4] w-full max-w-sm max-h-[50vh] overflow-hidden rounded-2xl bg-[#efe8de] shadow-2xl border border-[#d8c4ab]/40">
-            {bioCarouselImages.map((src, index) => (
-              <img 
-                src={src} 
-                alt={`Yeon Joo Lee portrait ${index + 1}`} 
-                class={`bio-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100' : 'opacity-0'}`} 
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Modals -->
+  <AboutModal 
+    carouselImages={bioCarouselImages} 
+    bgImage={bioBgImage} 
+  />
+  <ContactModal /> <!-- <-- Add this line -->
 </Layout>
 
 <script is:inline src="/load-gallery.js"></script>
 
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
+<script>
+  function initIndexScripts() {
+    // Smooth Scroll for Explore Link
     const exploreLink = document.getElementById('explore-link');
     exploreLink?.addEventListener('click', (e) => {
       e.preventDefault();
       document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' });
     });
 
-    const openBtn = document.getElementById('open-about-modal');
-    const closeBtn = document.getElementById('close-about-modal');
-    const modal = document.getElementById('about-modal');
-    const modalCard = document.getElementById('about-modal-card');
-    const slides = document.querySelectorAll('.bio-slide');
-
-    let slideIndex = 0;
-    let slideInterval = null;
-
-    function startCarousel() {
-      if (slides.length <= 1) return;
-      slideInterval = setInterval(() => {
-        slides[slideIndex].classList.remove('opacity-100');
-        slides[slideIndex].classList.add('opacity-0');
-        slideIndex = (slideIndex + 1) % slides.length;
-        slides[slideIndex].classList.remove('opacity-0');
-        slides[slideIndex].classList.add('opacity-100');
-      }, 3500);
-    }
-
-    function stopCarousel() {
-      if (slideInterval) {
-        clearInterval(slideInterval);
-        slideInterval = null;
-      }
-    }
-
-    function openModal() {
-      if (!modal) return;
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modal.classList.add('opacity-100');
-      modalCard?.classList.remove('scale-95');
-      modalCard?.classList.add('scale-100');
-      document.body.style.overflow = 'hidden';
-      startCarousel();
-    }
-
-    function closeModal() {
-      if (!modal) return;
-      modal.classList.remove('opacity-100');
-      modal.classList.add('opacity-0', 'pointer-events-none');
-      modalCard?.classList.remove('scale-100');
-      modalCard?.classList.add('scale-95');
-      document.body.style.overflow = '';
-      stopCarousel();
-    }
-
-    openBtn?.addEventListener('click', openModal);
-    closeBtn?.addEventListener('click', closeModal);
-
-    modal?.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
-
+    // Gallery Card Slideshows
     const cardSlideshows = document.querySelectorAll('.collection-slideshow');
     cardSlideshows.forEach((container, cardIdx) => {
       const cardSlides = container.querySelectorAll('.card-slide');
@@ -655,7 +549,16 @@ const galleryImages = publicImages.map((image) => {
         }, 3500);
       }, cardIdx * 400);
     });
-  });
+  }
+
+  // Run script reliably regardless of page load state or Astro View Transitions
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initIndexScripts();
+  } else {
+    document.addEventListener('DOMContentLoaded', initIndexScripts);
+  }
+
+  document.addEventListener('astro:page-load', initIndexScripts);
 </script>
 
 <style is:global>
