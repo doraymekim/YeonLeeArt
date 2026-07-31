@@ -135,6 +135,24 @@ const BREATH_STATEMENT_KO = `옐로우스톤 여행 중 가이저를 보며 느�
 
 const BREATH_STATEMENT_EN = `While watching the geysers during a trip to Yellowstone, a realization washed over me: the Earth beneath my feet is busily breathing, just like I am. It felt like a grand pulse announcing that our planet is truly alive. The Grand Prismatic Spring—where extremophile microorganisms seem to embroider the terrain with their own colors and designs—felt so mysterious and surreal, as if I had stepped onto another planet. This piece captures "Breath"—a shared connection with our beautiful, living Earth, which has breathed in the past, breathes now, and will continue to breathe into the future.`;
 
+// --- ARTIST ABOUT / POPUP STATEMENTS ---
+
+export const ARTIST_ABOUT_KO = `난 사랑하는 이들을 위해 요리하는 것을 좋아하는 사람이다. 가족을 포함하여 누군가를 위해 식탁을 차린다는 것은 정성이라는 그릇에 사랑과 관심을 담아내는 것이라 믿기에, 때론 번거로울 때도 있지만 나에겐 참 의미 있는 일이 아닐 수 없다.
+
+이런 나에게 ‘그림을 그린다는 것’은 더 많은 사람들을 위해 식탁을 차리는 것과 다름이 없다. 정성으로 만든 나의 음식을 통해 힐링을 전하고 싶은 마음처럼, 나의 그림으로 좋은 에너지와 행복함을 전하고 싶기에 흥미로운 소재를 구상하고 색을 고르며 나만의 터치로 캔버스를 채우고 기도한다.
+
+내 그림 앞에 선 모든 이들에게 작게나마 위로가 되고 힘이 되었으면 좋겠다. 그렇기에 '잘 그렸다'는 평가보다는 '그림이 밝고 정성이 가득해 감동을 받았다', '다음 그림에서는 또 어떤 좋은 에너지를 받게 될지 기대된다'라는 이야기가 나에게는 더욱 반갑고 고맙다.
+
+지금까지의 삶의 경험과 수많은 곳을 여행하며 느꼈던 감동을 나만의 레시피로 반죽하고, 나만의 해석과 붓터치로 양념을 더해 캔버스라는 그릇 위에 정성스레 담아낸다. 이 작업을 통해 풍요로움과 아름다움, 그리고 감사함을 표현하는 것—이것이 내가 붓을 잡는 이유이다.`;
+
+export const ARTIST_ABOUT_EN = `I am someone who loves to cook for those I hold dear. To set a table for my family or loved ones is to offer love and devotion served in a vessel of care—a process that, though painstaking at times, brings immense meaning to my life.
+
+For me, painting is no different than setting a welcoming table for a much broader circle of guests. Just as I hope a home-cooked meal offers comfort and healing, I wish for my artwork to convey positive energy and heartfelt joy. With this spirit, I envision engaging themes, select colors thoughtfully, layer the canvas with my unique brushstrokes, and pour my prayers into every piece.
+
+My greatest hope is that anyone standing before my paintings finds a moment of quiet solace and strength. Hearing someone say, "I was deeply moved by the warmth and devotion in your work," or "I can't wait to feel the uplifting energy of your next piece," brings me far greater gratitude than praise for technical skill alone.
+
+By blending my life journey and the awe experienced while traveling the world into my own unique recipe—seasoned with my personal perspective and brushwork—I serve a heartfully crafted artwork upon the canvas. Expressing abundance, beauty, and deep gratitude through this visual feast is the very reason I pick up my brush.`;
+
 // --------------------------------------------------------------------------
 // EXPORTED METADATA REGISTRY
 // --------------------------------------------------------------------------
