@@ -1,21 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { PERSONAL_INFO } from '../consts';
+import { BIO_IMAGES, findArtwork } from '../lib/images';
 
 const { role, name, about } = PERSONAL_INFO;
 const title = `${name} - About`;
 
-// Fetch images dynamically from public directory using Vite glob
-const publicImages = Object.keys(
-  import.meta.glob('/public/*.{jpg,jpeg,png,webp,gif,JPG,JPEG,PNG,WEBP,GIF}', { eager: true })
-).map((filePath) => {
-  const fileName = filePath.split('/').pop() || '';
-  const label = fileName.replace(/\.[^.]+$/, '');
-  return {
-    label,
-    href: filePath.replace('/public', ''),
-  };
-});
+// Images come from the shared manifest in src/lib/images (masters live in
+// src/assets/, served as resized derivatives instead of raw public/ files).
+const publicImages = BIO_IMAGES.map((img) => ({
+  label: img.label,
+  modal: img.modal,
+  grid: img.grid,
+}));
 
 // 1. Locate the wide ocean shot for background
 const oceanBgObj = publicImages.find((img) => {
@@ -23,7 +20,10 @@ const oceanBgObj = publicImages.find((img) => {
   return normalized.includes('photo 2') || normalized.includes('headshot photo 2');
 });
 
-const oceanBgUrl = encodeURI(oceanBgObj?.href || '/Yeon Joo Lee Headshot Photo 2.jpg');
+// (Previously this fell back to '/Yeon Joo Lee Headshot Photo 2.jpg', a file
+// that never existed — the master is a .png. The manifest always resolves
+// to the real derivative, so the broken fallback is gone.)
+const oceanBgUrl = oceanBgObj?.modal || findArtwork('yeon joo lee headshot photo 2')?.modal || '';
 
 // 2. Foreground slideshow images
 const targetPortraitLabels = [
@@ -34,14 +34,14 @@ const targetPortraitLabels = [
 ];
 
 const portraitImages = targetPortraitLabels
-  .map((label) => 
-    publicImages.find((img) => 
+  .map((label) =>
+    publicImages.find((img) =>
       img.label.toLowerCase().replace(/[-_]/g, ' ') === label.toLowerCase().replace(/[-_]/g, ' ')
     )
   )
-  .filter(Boolean);
+  .filter((img): img is NonNullable<typeof img> => Boolean(img));
 
-const fallbackPortrait = portraitImages[0]?.href || publicImages[0]?.href || '';
+const fallbackPortrait = portraitImages[0]?.modal || publicImages[0]?.modal || '';
 const currentYear = new Date().getFullYear();
 ---
 
@@ -114,8 +114,10 @@ const currentYear = new Date().getFullYear();
                 portraitImages.length > 0 ? (
                   portraitImages.map((img, index) => (
                     <img
-                      src={encodeURI(img.href)}
+                      src={img.modal}
                       alt={img.label}
+                      loading="lazy"
+                      decoding="async"
                       class={`absolute inset-0 h-full w-full object-contain object-center p-1 transition-opacity duration-1000 ease-in-out ${
                         index === 0 ? 'opacity-100' : 'opacity-0'
                       }`}
@@ -124,8 +126,10 @@ const currentYear = new Date().getFullYear();
                   ))
                 ) : (
                   <img
-                    src={encodeURI(fallbackPortrait)}
+                    src={fallbackPortrait}
                     alt="Portrait"
+                    loading="lazy"
+                    decoding="async"
                     class="h-full w-full object-contain object-center p-1"
                   />
                 )
@@ -153,15 +157,15 @@ const currentYear = new Date().getFullYear();
 
       setInterval(() => {
         // Fade out active slide
-        slides[currentIndex].classList.remove('opacity-100');
-        slides[currentIndex].classList.add('opacity-0');
-        
+        slides[currentIndex]?.classList.remove('opacity-100');
+        slides[currentIndex]?.classList.add('opacity-0');
+
         // Move to next slide
         currentIndex = (currentIndex + 1) % slides.length;
-        
+
         // Fade in new slide
-        slides[currentIndex].classList.remove('opacity-0');
-        slides[currentIndex].classList.add('opacity-100');
+        slides[currentIndex]?.classList.remove('opacity-0');
+        slides[currentIndex]?.classList.add('opacity-100');
       }, 4500);
     }
 

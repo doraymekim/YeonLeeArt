@@ -1,28 +1,31 @@
 ---
-import { readdirSync } from 'node:fs';
-import path from 'node:path';
 import Layout from '../layouts/Layout.astro';
 import Footer from '../components/Footer.astro';
 import AboutModal from '../components/AboutModal.astro';
 import { PERSONAL_INFO } from '../consts';
 import { ARTWORK_METADATA } from '../data/artworks.ts';
 import ContactModal from '../components/ContactModal.astro'; // <-- Add this line
+import { ARTWORK_IMAGES, findArtwork, findArtworks, type ArtworkImage } from '../lib/images';
 
-const publicDir = path.join(process.cwd(), 'public');
-
-// Helper to format artwork item with full metadata payload & fallback compatibility keys
-const formatArtworkPayload = (img: { label: string; href: string }) => {
+// Helper to format artwork item with full metadata payload & fallback compatibility keys.
+// `src` stays in the payload as the modal-tier URL for backwards compatibility;
+// the lightbox prefers `modal` for the main view, `thumb` for thumbnails and
+// `full` for the fullscreen view when present.
+const formatArtworkPayload = (img: ArtworkImage) => {
   let displayTitle = img.label;
   if (displayTitle.toLowerCase() === 'heart tree 1') displayTitle = 'Heart Tree I';
   if (displayTitle.toLowerCase() === 'heart tree 2') displayTitle = 'Heart Tree II';
 
   const meta = ARTWORK_METADATA[displayTitle.toLowerCase()] || ARTWORK_METADATA[img.label.toLowerCase()] || {};
-  
+
   const statementEn = meta.statementEn || '';
   const statementKo = meta.statementKo || '';
 
   return {
-    src: img.href,
+    src: img.modal,
+    modal: img.modal,
+    thumb: img.grid,
+    full: img.full,
     title: meta.title || displayTitle,
     year: meta.year || '',
     price: meta.price || '',
@@ -39,47 +42,22 @@ const formatArtworkPayload = (img: { label: string; href: string }) => {
   };
 };
 
-// Scan all image files to map bio assets
-const allPublicImages = readdirSync(publicDir)
-  .filter((file) => /\.(jpg|jpeg|png|webp|gif)$/i.test(file))
-  .filter((file) => file !== 'favicon.svg')
-  .map((file) => ({
-    label: file.replace(/\.[^.]+$/, ''),
-    href: `/${file}`,
-  }));
+// All gallery paintings, discovered from src/assets/artwork via src/lib/images
+const publicImages = ARTWORK_IMAGES;
 
-const getBioImg = (label: string) => 
-  allPublicImages.find((img) => img.label.toLowerCase() === label.toLowerCase())?.href;
-
-// Fading slideshow images for the About modal
+// Fading slideshow images for the About modal (grid tier is plenty here)
 const bioCarouselImages = [
-  getBioImg('balloon trail mom'),
-  getBioImg('bom and mom'),
-  getBioImg('italian journey mom'),
-  getBioImg('yeon joo lee headshot photo'),
-].filter(Boolean);
+  findArtwork('balloon trail mom')?.grid,
+  findArtwork('bom and mom')?.grid,
+  findArtwork('italian journey mom')?.grid,
+  findArtwork('yeon joo lee headshot photo')?.grid,
+].filter(Boolean) as string[];
 
 // Background watermark image
-const bioBgImage = getBioImg('yeon joo lee headshot photo 2');
-
-// Exclude portrait/about photos from the main gallery grid
-const excludedLabels = [
-  'balloon trail mom',
-  'bom and mom',
-  'italian journey mom',
-  'yeon joo lee headshot photo',
-  'yeon joo lee headshot photo 2',
-];
-
-const publicImages = allPublicImages
-  .filter((image) => !excludedLabels.includes(image.label.toLowerCase()))
-  .sort((a, b) => a.label.localeCompare(b.label));
+const bioBgImage = findArtwork('yeon joo lee headshot photo 2')?.grid;
 
 // Helper to bundle collection items case-insensitively
-const findCollectionImages = (labels: string[]) =>
-  labels
-    .map((label) => publicImages.find((img) => img.label.toLowerCase() === label.toLowerCase()))
-    .filter(Boolean) as { label: string; href: string }[];
+const findCollectionImages = (labels: string[]) => findArtworks(labels);
 
 // Collections
 const balloonTrailImages = findCollectionImages([
@@ -133,7 +111,8 @@ const seasonImages = findCollectionImages([
   'YeoReum',
 ]);
 
-const yeoReumSrc = seasonImages.find((i) => i.label.toLowerCase() === 'yeoreum')?.href || '/YeoReum.JPEG';
+const yeoReumImg = seasonImages.find((i) => i.label.toLowerCase() === 'yeoreum');
+const yeoReumSrc = yeoReumImg?.modal || '/YeoReum.JPEG';
 
 // Color dot palettes for series badges
 const collectionPalettes: Record<string, { name: string; color: string }[]> = {
@@ -179,8 +158,12 @@ const collectionPalettes: Record<string, { name: string; color: string }[]> = {
   ],
 };
 
-// Map collections to primary items with case-insensitive logic
-const galleryImages = publicImages.map((image) => {
+// Map collections to primary items with case-insensitive logic.
+// (Explicit element type: previously the inferred union type made every
+// `image.subGallery` access a type error — one of the pre-existing
+// `astro check` failures on this repo.)
+type GalleryImage = ArtworkImage & { displayLabel: string; subGallery?: ArtworkImage[] };
+const galleryImages: GalleryImage[] = publicImages.map((image) => {
   const labelLower = image.label.toLowerCase();
 
   if (labelLower === 'balloon trail') {
@@ -274,9 +257,10 @@ const galleryImages = publicImages.map((image) => {
               Featured Work
             </div>
 
-            <img 
-              src={yeoReumSrc} 
-              alt="YeoReum by Yeon Joo Lee" 
+            <img
+              src={yeoReumImg?.grid}
+              alt="YeoReum by Yeon Joo Lee"
+              fetchpriority="high"
               class="h-full w-full rounded-lg object-contain"
             />
           </div>
@@ -314,7 +298,7 @@ const galleryImages = publicImages.map((image) => {
             data-gallery-trigger="true"
             data-gallery-type="subgallery"
             data-gallery-title="Whistle"
-            data-gallery-src="/Whistle.jpg"
+            data-gallery-src={findArtwork('Whistle')?.modal}
             data-gallery-items={JSON.stringify(whistleImages.map(formatArtworkPayload))}
             class="font-sans-tiffany inline-flex items-center gap-3 rounded-full bg-[#81d8d0] px-8 py-4 text-sm font-semibold text-[#0f172a] shadow-[0_10px_30px_rgba(129,216,208,0.25)] transition duration-300 hover:bg-white hover:scale-105"
           >
@@ -325,26 +309,30 @@ const galleryImages = publicImages.map((image) => {
         <div class="lg:col-span-7 flex flex-wrap justify-center gap-2.5 sm:gap-3">
           {
             [
-              { title: 'Original', src: '/Whistle.jpg', color: '#81d8d0' },
-              { title: 'Autumn', src: '/Whistle Autumn.jpg', color: '#c27838' },
-              { title: 'Blue', src: '/Whistle Blue.jpg', color: '#3b82f6' },
-              { title: 'Sunset', src: '/Whistle Sunset.jpg', color: '#e11d48' },
-              { title: 'Yellow', src: '/Whistle Yellow.jpg', color: '#eab308' },
-            ].map((variant) => (
-              <div 
+              { title: 'Original', label: 'Whistle', color: '#81d8d0' },
+              { title: 'Autumn', label: 'Whistle Autumn', color: '#c27838' },
+              { title: 'Blue', label: 'Whistle Blue', color: '#3b82f6' },
+              { title: 'Sunset', label: 'Whistle Sunset', color: '#e11d48' },
+              { title: 'Yellow', label: 'Whistle Yellow', color: '#eab308' },
+            ].map((variant) => {
+              const variantImg = findArtwork(variant.label);
+              return (
+              <div
                 class="group relative flex flex-col cursor-pointer overflow-hidden rounded-2xl bg-slate-900/60 p-2 border border-white/10 transition duration-300 hover:border-[#81d8d0]/60 hover:-translate-y-1.5 shadow-lg w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.6rem)] lg:w-0 lg:flex-1 min-w-0"
                 data-gallery-trigger="true"
                 data-gallery-type="subgallery"
                 data-gallery-title="Whistle"
-                data-gallery-src={variant.src}
+                data-gallery-src={variantImg?.modal}
                 data-gallery-items={JSON.stringify(whistleImages.map(formatArtworkPayload))}
                 role="button"
                 tabindex="0"
               >
                 <div class="aspect-[3/4] w-full overflow-hidden rounded-xl bg-slate-950">
-                  <img 
-                    src={variant.src} 
-                    alt={`Whistle ${variant.title}`} 
+                  <img
+                    src={variantImg?.grid}
+                    alt={`Whistle ${variant.title}`}
+                    loading="lazy"
+                    decoding="async"
                     class="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                   />
                 </div>
@@ -356,7 +344,8 @@ const galleryImages = publicImages.map((image) => {
                   <span class="h-2 w-2 shrink-0 rounded-full border border-white/20 ml-1" style={`background-color: ${variant.color}`} />
                 </div>
               </div>
-            ))
+              );
+            })
           }
         </div>
 
@@ -421,7 +410,7 @@ const galleryImages = publicImages.map((image) => {
               const palette = collectionPalettes[collectionTitle] || collectionPalettes[image.label] || [];
 
               const itemsPayload = isCollection
-                ? image.subGallery.map(formatArtworkPayload)
+                ? image.subGallery!.map(formatArtworkPayload)
                 : [formatArtworkPayload(image)];
 
               return (
@@ -440,27 +429,31 @@ const galleryImages = publicImages.map((image) => {
                     data-gallery-trigger="true"
                     data-gallery-type={isCollection ? 'subgallery' : 'image'}
                     data-gallery-title={isCollection ? collectionTitle : image.label}
-                    data-gallery-src={image.href}
+                    data-gallery-src={image.modal}
                     data-gallery-items={JSON.stringify(itemsPayload)}
                   >
                     <!-- FIXED HEIGHT IMAGE CONTAINER TO FORCE EXACT BASELINE MATCH -->
                     <div class="relative w-full h-72 sm:h-80 lg:h-96 overflow-hidden leading-none bg-[#efe8de] shrink-0">
                       {isAnimatedCollection ? (
                         <div class="collection-slideshow relative h-full w-full">
-                          {image.subGallery.map((subItem, idx) => (
+                          {image.subGallery!.map((subItem, idx) => (
                             <img
-                              src={subItem.href}
+                              src={subItem.grid}
                               alt={subItem.label}
                               width="800"
+                              loading="lazy"
+                              decoding="async"
                               class={`card-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${idx === 0 ? 'opacity-100' : 'opacity-0'}`}
                             />
                           ))}
                         </div>
                       ) : (
                         <img
-                          src={image.href}
+                          src={image.grid}
                           alt={collectionTitle}
                           width="800"
+                          loading="lazy"
+                          decoding="async"
                           class="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
                         />
                       )}
@@ -482,7 +475,7 @@ const galleryImages = publicImages.map((image) => {
                       {isCollection ? (
                         <div class="flex items-center justify-between gap-2 pt-2 mt-auto">
                           <span class="font-sans-tiffany text-[10px] font-bold uppercase tracking-[0.2em] text-[#0f172a] bg-[#81d8d0]/30 border border-[#81d8d0]/60 px-2.5 py-0.5 rounded-full">
-                            Series • {image.subGallery.length} Studies
+                            Series • {image.subGallery!.length} Studies
                           </span>
 
                           {palette.length > 0 && (
@@ -522,8 +515,6 @@ const galleryImages = publicImages.map((image) => {
   <ContactModal /> <!-- <-- Add this line -->
 </Layout>
 
-<script is:inline src="/load-gallery.js"></script>
-
 <script>
   function initIndexScripts() {
     // Smooth Scroll for Explore Link
@@ -541,11 +532,11 @@ const galleryImages = publicImages.map((image) => {
       let currentIndex = 0;
       setTimeout(() => {
         setInterval(() => {
-          cardSlides[currentIndex].classList.remove('opacity-100');
-          cardSlides[currentIndex].classList.add('opacity-0');
+          cardSlides[currentIndex]?.classList.remove('opacity-100');
+          cardSlides[currentIndex]?.classList.add('opacity-0');
           currentIndex = (currentIndex + 1) % cardSlides.length;
-          cardSlides[currentIndex].classList.remove('opacity-0');
-          cardSlides[currentIndex].classList.add('opacity-100');
+          cardSlides[currentIndex]?.classList.remove('opacity-0');
+          cardSlides[currentIndex]?.classList.add('opacity-100');
         }, 3500);
       }, cardIdx * 400);
     });

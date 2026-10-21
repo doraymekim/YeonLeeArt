@@ -21,6 +21,3 @@ jobs:
       - run: yarn install --frozen-lockfile
 
       - run: yarn build
-        env:
-          NOTION_API_KEY: ${{secrets.NOTION_API_KEY}}
-          DATABASE_ID: ${{secrets.DATABASE_ID}}
