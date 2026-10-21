@@ -186,7 +186,10 @@
 
     function openFullscreen() {
       if (!mainImg || !mainImg.src) return;
-      fullscreenImg.src = mainImg.src;
+      // Use the high-resolution (~2560w) derivative when the payload provides
+      // one; older payloads only carry `src`, which is already the modal tier.
+      const item = activeCollection?.items?.[currentIndex];
+      fullscreenImg.src = item?.full || mainImg.src;
       fullscreenImg.alt = mainImg.alt || 'Full screen painting view';
       fullscreenOverlay.style.display = 'flex';
     }
@@ -288,7 +291,7 @@ if (isCurrentlyKoreanText) {
     const thumbContainer = document.getElementById('gallery-thumbnails-container');
 
     if (mainImg) {
-      mainImg.src = item.src;
+      mainImg.src = item.modal || item.src;
       mainImg.alt = item.title;
     }
 
@@ -385,7 +388,7 @@ if (isCurrentlyKoreanText) {
           }`;
 
           thumbBtn.innerHTML = `
-            <img src="${thumbItem.src}" alt="${thumbItem.title}" class="h-full w-full object-contain rounded-lg" />
+            <img src="${thumbItem.thumb || thumbItem.modal || thumbItem.src}" alt="${thumbItem.title}" loading="lazy" decoding="async" class="h-full w-full object-contain rounded-lg" />
           `;
 
           thumbBtn.addEventListener('click', () => {

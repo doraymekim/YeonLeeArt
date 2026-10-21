@@ -1,7 +1,7 @@
 ---
 interface Props {
   carouselImages: (string | undefined)[];
-  bgImage?: string;
+  bgImage?: string | undefined;
 }
 
 const { carouselImages = [], bgImage } = Astro.props;
@@ -18,10 +18,12 @@ const { carouselImages = [], bgImage } = Astro.props;
     class="relative w-full max-w-5xl lg:max-w-6xl max-h-[85vh] sm:max-h-[88vh] overflow-y-auto rounded-[2.5rem] bg-[#fdfbf7] border border-[#d8c4ab]/60 p-6 sm:p-8 lg:p-10 shadow-2xl transition-all duration-300 scale-95 flex flex-col justify-start lg:justify-end shrink-0"
   >
     {bgImage && (
-      <img 
-        src={bgImage} 
-        alt="" 
-        class="absolute -top-28 sm:-top-44 lg:-top-64 inset-x-0 h-[160%] w-full object-cover object-top opacity-15 pointer-events-none select-none mix-blend-multiply" 
+      <img
+        src={bgImage}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        class="absolute -top-28 sm:-top-44 lg:-top-64 inset-x-0 h-[160%] w-full object-cover object-top opacity-15 pointer-events-none select-none mix-blend-multiply"
       />
     )}
 
@@ -93,10 +95,12 @@ const { carouselImages = [], bgImage } = Astro.props;
         <div class="relative aspect-[3/4] w-full max-w-sm max-h-[50vh] overflow-hidden rounded-2xl bg-[#efe8de] shadow-2xl border border-[#d8c4ab]/40">
           {carouselImages.map((src, index) => (
             src ? (
-              <img 
-                src={src} 
-                alt={`Yeon Joo Lee portrait ${index + 1}`} 
-                class={`bio-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100' : 'opacity-0'}`} 
+              <img
+                src={src}
+                alt={`Yeon Joo Lee portrait ${index + 1}`}
+                loading="lazy"
+                decoding="async"
+                class={`bio-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${index === 0 ? 'opacity-100' : 'opacity-0'}`}
               />
             ) : null
           ))}
