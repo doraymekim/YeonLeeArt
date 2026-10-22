@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Static-assets-only Worker: no server code, no framework adapter.
+  // Wrangler serves the Astro build output in ./dist directly.
+  // Committing this file stops `wrangler deploy` from autoconfiguring
+  // (and rebuilding the site in server mode) on every deploy.
+  "name": "yeonleeart",
+  "compatibility_date": "2026-10-22",
+  // The dashboard-created Worker had these on; wrangler turns them off
+  // by default when they are absent from a config file. Preview URLs
+  // are how new versions get verified before taking production traffic.
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist"
+  }
+}
