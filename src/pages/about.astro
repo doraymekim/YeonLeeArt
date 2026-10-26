@@ -1,18 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ResponsiveImage from '../components/ResponsiveImage.astro';
 import { PERSONAL_INFO } from '../consts';
-import { BIO_IMAGES, findArtwork } from '../lib/images';
+import { BIO_IMAGES, findArtwork, type ArtworkImage } from '../lib/images';
 
 const { role, name, about } = PERSONAL_INFO;
 const title = `${name} - About`;
 
 // Images come from the shared manifest in src/lib/images (masters live in
 // src/assets/, served as resized derivatives instead of raw public/ files).
-const publicImages = BIO_IMAGES.map((img) => ({
-  label: img.label,
-  modal: img.modal,
-  grid: img.grid,
-}));
+const publicImages: ArtworkImage[] = BIO_IMAGES;
 
 // 1. Locate the wide ocean shot for background
 const oceanBgObj = publicImages.find((img) => {
@@ -23,7 +20,7 @@ const oceanBgObj = publicImages.find((img) => {
 // (Previously this fell back to '/Yeon Joo Lee Headshot Photo 2.jpg', a file
 // that never existed — the master is a .png. The manifest always resolves
 // to the real derivative, so the broken fallback is gone.)
-const oceanBgUrl = oceanBgObj?.modal || findArtwork('yeon joo lee headshot photo 2')?.modal || '';
+const oceanBg = oceanBgObj || findArtwork('yeon joo lee headshot photo 2');
 
 // 2. Foreground slideshow images
 const targetPortraitLabels = [
@@ -41,7 +38,7 @@ const portraitImages = targetPortraitLabels
   )
   .filter((img): img is NonNullable<typeof img> => Boolean(img));
 
-const fallbackPortrait = portraitImages[0]?.modal || publicImages[0]?.modal || '';
+const fallbackPortrait = portraitImages[0] || publicImages[0];
 const currentYear = new Date().getFullYear();
 ---
 
@@ -64,11 +61,20 @@ const currentYear = new Date().getFullYear();
         
         <!-- Ocean Background Image Layer -->
         <div class="absolute inset-0 z-0 overflow-hidden">
-          <img 
-            src={oceanBgUrl} 
-            alt="Ocean View Background" 
-            class="h-full w-full object-cover object-center filter brightness-100 contrast-[1.02]"
-          />
+          {oceanBg && (
+            <ResponsiveImage
+              src={oceanBg.pageSrc || oceanBg.grid}
+              srcset={oceanBg.pageSrcSet || oceanBg.gridSrcSet}
+              width={oceanBg.width}
+              height={oceanBg.height}
+              placeholder={oceanBg.placeholder}
+              alt="Ocean View Background"
+              sizes="100vw"
+              loading="eager"
+              fetchpriority="high"
+              class="h-full w-full object-cover object-center filter brightness-100 contrast-[1.02]"
+            />
+          )}
           <!-- Gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-r from-[#f7f0e8]/90 via-[#f7f0e8]/40 to-transparent"></div>
         </div>
@@ -113,26 +119,34 @@ const currentYear = new Date().getFullYear();
               {
                 portraitImages.length > 0 ? (
                   portraitImages.map((img, index) => (
-                    <img
-                      src={img.modal}
+                    <ResponsiveImage
+                      src={img.pageSrc || img.modal}
+                      srcset={img.pageSrcSet || img.gridSrcSet}
+                      width={img.width}
+                      height={img.height}
+                      placeholder={img.placeholder}
                       alt={img.label}
-                      loading="lazy"
-                      decoding="async"
-                      class={`absolute inset-0 h-full w-full object-contain object-center p-1 transition-opacity duration-1000 ease-in-out ${
+                      sizes="(min-width: 1024px) 48vw, 92vw"
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      fetchpriority={index === 0 ? 'high' : undefined}
+                      class={`portrait-slide absolute inset-0 h-full w-full object-contain object-center p-1 transition-opacity duration-1000 ease-in-out ${
                         index === 0 ? 'opacity-100' : 'opacity-0'
                       }`}
-                      data-portrait-slide
                     />
                   ))
-                ) : (
-                  <img
-                    src={fallbackPortrait}
+                ) : fallbackPortrait ? (
+                  <ResponsiveImage
+                    src={fallbackPortrait.pageSrc || fallbackPortrait.modal}
+                    srcset={fallbackPortrait.pageSrcSet || fallbackPortrait.gridSrcSet}
+                    width={fallbackPortrait.width}
+                    height={fallbackPortrait.height}
+                    placeholder={fallbackPortrait.placeholder}
                     alt="Portrait"
-                    loading="lazy"
-                    decoding="async"
+                    sizes="(min-width: 1024px) 48vw, 92vw"
+                    loading="eager"
                     class="h-full w-full object-contain object-center p-1"
                   />
-                )
+                ) : null
               }
             </div>
           </div>
@@ -150,7 +164,7 @@ const currentYear = new Date().getFullYear();
   <!-- Client-Side Fading Script -->
   <script>
     function setupSlideshow() {
-      const slides = document.querySelectorAll<HTMLImageElement>('[data-portrait-slide]');
+      const slides = document.querySelectorAll<HTMLImageElement>('img.portrait-slide');
       if (slides.length <= 1) return;
 
       let currentIndex = 0;

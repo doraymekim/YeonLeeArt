@@ -1,0 +1,45 @@
+---
+interface Props {
+  src: string;
+  srcset?: string | undefined;
+  width: number;
+  height: number;
+  alt: string;
+  sizes: string;
+  placeholder?: string | undefined;
+  loading?: 'eager' | 'lazy' | undefined;
+  fetchpriority?: 'high' | 'low' | 'auto' | undefined;
+  class?: string | undefined;
+}
+
+const {
+  src,
+  srcset,
+  width,
+  height,
+  alt,
+  sizes,
+  placeholder,
+  loading = 'lazy',
+  fetchpriority,
+  class: className,
+} = Astro.props;
+
+const background = placeholder
+  ? `background-image:url("${placeholder}");background-size:cover;background-position:center;`
+  : undefined;
+---
+
+<img
+  src={src}
+  srcset={srcset}
+  sizes={sizes}
+  width={width}
+  height={height}
+  alt={alt}
+  loading={loading}
+  decoding="async"
+  fetchpriority={fetchpriority}
+  class:list={[className]}
+  style={background}
+/>

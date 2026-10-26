@@ -1,20 +1,21 @@
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import path from 'node:path';
+import sharp from 'sharp';
 
 // ---------------------------------------------------------------------------
-// Central artwork image manifest.
+// Artwork image manifest.
 //
-// Masters live in src/assets/ (moved out of public/, where Astro copied them
-// to the site verbatim at full size). Every consumer renders resized
-// derivatives generated at build time by Astro's image service:
+// Masters in src/assets/ are never rewritten. Astro's image service builds
+// derivatives at build time:
 //
-//   grid   ~800w  WebP q80  — gallery cards & stacked slideshow slides
-//   modal  ~1600w WebP q85  — lightbox main view & modal thumbnails
-//   full   ~2560w WebP q90  — fullscreen view (presentation-quality tier)
+//   grid   WebP q80 at 480 / 640 / 800 / 1200 / 1600 — cards, hero, slideshows
+//   modal  WebP q85 at min(1600, native width) — lightbox detail view
+//   full   WebP q90 at min(2560, native width) — fullscreen view
 //
-// Labels are derived from the master filenames exactly as the old public/
-// scan derived them, so src/data/artworks.ts metadata stays keyed the
-// same way.
+// Widths stop at the painting's real pixel size so a smaller master is not
+// stretched. AVIF was measured for these paintings: at settings that held
+// the same detail as WebP q80 it came out larger, so page images stay WebP.
 // ---------------------------------------------------------------------------
 
 export interface ArtworkImage {
@@ -22,42 +23,121 @@ export interface ArtworkImage {
   label: string;
   /** Original filename, e.g. "Balloon Trail Blue.jpg" */
   fileName: string;
-  /** ~800w derivative for grids/cards */
+  /** Mid-size WebP used as the src fallback (around 800px, or native if smaller) */
   grid: string;
-  /** ~1600w derivative for the lightbox main view & thumbnails */
+  /** Responsive WebP candidates for grids and page images */
+  gridSrcSet: string;
+  /**
+   * Higher-quality responsive WebP (q85, up to 1600) for large page photos.
+   * Present on bio images, which are shown big on the about page.
+   */
+  pageSrc?: string | undefined;
+  pageSrcSet?: string | undefined;
+  /** ~1600w (or native) WebP for the lightbox detail view */
   modal: string;
-  /** ~2560w derivative for the fullscreen view */
+  /** ~2560w (or native) WebP for the fullscreen view */
   full: string;
-  /** Intrinsic dimensions of the grid derivative */
+  /** Intrinsic dimensions of the master, for aspect ratio */
   width: number;
   height: number;
+  /** Tiny inline WebP shown as a blur while the real image loads */
+  placeholder: string;
 }
 
-const GRID_OPTS = { width: 800, format: 'webp', quality: 80 } as const;
-const MODAL_OPTS = { width: 1600, format: 'webp', quality: 85 } as const;
-const FULL_OPTS = { width: 2560, format: 'webp', quality: 90 } as const;
+const GRID_WIDTHS = [480, 640, 800, 1200, 1600];
+const GRID_QUALITY = 80;
+const PAGE_WIDTHS = [640, 960, 1280, 1600];
+const PAGE_QUALITY = 85;
+const MODAL_WIDTH = 1600;
+const MODAL_QUALITY = 85;
+const FULL_WIDTH = 2560;
+const FULL_QUALITY = 90;
+
+// Glob keys are relative to src/lib. The built chunk lives in dist/, so
+// import.meta.url would point at the wrong folder. Resolve from the project.
+const sourceLibDir = path.resolve(process.cwd(), 'src/lib');
 
 const labelOf = (filePath: string) =>
   (filePath.split('/').pop() || '').replace(/\.[^.]+$/, '');
 
+async function placeholderFor(relFromLib: string): Promise<string> {
+  const abs = path.resolve(sourceLibDir, relFromLib);
+  const buf = await sharp(abs)
+    .rotate()
+    .resize({ width: 20, withoutEnlargement: true })
+    .webp({ quality: 30 })
+    .toBuffer();
+  return `data:image/webp;base64,${buf.toString('base64')}`;
+}
+
+function fallbackWidth(descriptor: string): number {
+  const parsed = Number.parseInt(descriptor, 10);
+  return Number.isFinite(parsed) ? parsed : 800;
+}
+
+async function makeSrcSet(
+  meta: ImageMetadata,
+  widths: number[],
+  quality: number,
+  fallbackDescriptor: string,
+): Promise<{ src: string; srcset: string }> {
+  // Pass an explicit width. Without one, Astro also emits a full-size
+  // WebP of the master, and that file would be deployed even though no
+  // page asks for it.
+  const generated = await getImage({
+    src: meta,
+    width: Math.min(fallbackWidth(fallbackDescriptor), meta.width),
+    widths,
+    format: 'webp',
+    quality,
+  });
+  const values = generated.srcSet?.values ?? [];
+  const fallback =
+    values.find((value) => value.descriptor === fallbackDescriptor) ??
+    values[values.length - 1];
+  return {
+    src: fallback?.url ?? generated.src,
+    srcset: generated.srcSet?.attribute ?? '',
+  };
+}
+
+async function singleWebp(meta: ImageMetadata, width: number, quality: number): Promise<string> {
+  const generated = await getImage({
+    src: meta,
+    width: Math.min(width, meta.width),
+    format: 'webp',
+    quality,
+  });
+  return generated.src;
+}
+
 async function buildEntries(
   modules: Record<string, ImageMetadata>,
+  options: { page?: boolean } = {},
 ): Promise<ArtworkImage[]> {
   const entries = await Promise.all(
     Object.entries(modules).map(async ([filePath, meta]) => {
-      const [grid, modal, full] = await Promise.all([
-        getImage({ src: meta, ...GRID_OPTS }),
-        getImage({ src: meta, ...MODAL_OPTS }),
-        getImage({ src: meta, ...FULL_OPTS }),
+      const [grid, page, modal, full, placeholder] = await Promise.all([
+        makeSrcSet(meta, GRID_WIDTHS, GRID_QUALITY, '800w'),
+        options.page
+          ? makeSrcSet(meta, PAGE_WIDTHS, PAGE_QUALITY, '1600w')
+          : Promise.resolve(null),
+        singleWebp(meta, MODAL_WIDTH, MODAL_QUALITY),
+        singleWebp(meta, FULL_WIDTH, FULL_QUALITY),
+        placeholderFor(filePath),
       ]);
       return {
         label: labelOf(filePath),
         fileName: filePath.split('/').pop() || '',
         grid: grid.src,
-        modal: modal.src,
-        full: full.src,
-        width: grid.attributes.width,
-        height: grid.attributes.height,
+        gridSrcSet: grid.srcset,
+        pageSrc: page?.src,
+        pageSrcSet: page?.srcset,
+        modal,
+        full,
+        width: meta.width,
+        height: meta.height,
+        placeholder,
       } satisfies ArtworkImage;
     }),
   );
@@ -82,7 +162,9 @@ export const ARTWORK_IMAGES: ArtworkImage[] = await buildEntries(
 );
 
 /** Artist/about photos (mom series + headshots), sorted by label. */
-export const BIO_IMAGES: ArtworkImage[] = await buildEntries(toMetaMap(bioModules));
+export const BIO_IMAGES: ArtworkImage[] = await buildEntries(toMetaMap(bioModules), {
+  page: true,
+});
 
 const ALL_IMAGES = [...ARTWORK_IMAGES, ...BIO_IMAGES];
 
