@@ -1,6 +1,5 @@
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import path from 'node:path';
 import sharp from 'sharp';
 
 // ---------------------------------------------------------------------------
@@ -53,21 +52,47 @@ const MODAL_QUALITY = 85;
 const FULL_WIDTH = 2560;
 const FULL_QUALITY = 90;
 
-// Glob keys are relative to src/lib. The built chunk lives in dist/, so
-// import.meta.url would point at the wrong folder. Resolve from the project.
-const sourceLibDir = path.resolve(process.cwd(), 'src/lib');
-
 const labelOf = (filePath: string) =>
   (filePath.split('/').pop() || '').replace(/\.[^.]+$/, '');
 
-async function placeholderFor(relFromLib: string): Promise<string> {
-  const abs = path.resolve(sourceLibDir, relFromLib);
-  const buf = await sharp(abs)
+// Astro's image object marks a master as "used by the page" when code reads
+// its width, height, or src. Those files would then be uploaded at full size
+// even though no page links to them. Read the path only, and measure the
+// pixels with sharp. The file in src/assets/ is never written.
+function masterFilePath(meta: ImageMetadata): string {
+  const filePath = (meta as ImageMetadata & { fsPath?: string }).fsPath;
+  if (!filePath) {
+    throw new Error('Artwork master is missing its file path.');
+  }
+  return filePath;
+}
+
+function orientedSize(width: number, height: number, orientation?: number) {
+  const swap = (orientation || 0) >= 5;
+  return swap ? { width: height, height: width } : { width, height };
+}
+
+async function readMaster(meta: ImageMetadata): Promise<{
+  width: number;
+  height: number;
+  placeholder: string;
+}> {
+  const filePath = masterFilePath(meta);
+  const probed = await sharp(filePath).metadata();
+  const size = orientedSize(probed.width ?? 0, probed.height ?? 0, probed.orientation);
+  if (!size.width || !size.height) {
+    throw new Error(`Could not read the size of ${filePath}`);
+  }
+  const buf = await sharp(filePath)
     .rotate()
     .resize({ width: 20, withoutEnlargement: true })
     .webp({ quality: 30 })
     .toBuffer();
-  return `data:image/webp;base64,${buf.toString('base64')}`;
+  return {
+    width: size.width,
+    height: size.height,
+    placeholder: `data:image/webp;base64,${buf.toString('base64')}`,
+  };
 }
 
 function fallbackWidth(descriptor: string): number {
@@ -80,13 +105,14 @@ async function makeSrcSet(
   widths: number[],
   quality: number,
   fallbackDescriptor: string,
+  nativeWidth: number,
 ): Promise<{ src: string; srcset: string }> {
   // Pass an explicit width. Without one, Astro also emits a full-size
   // WebP of the master, and that file would be deployed even though no
   // page asks for it.
   const generated = await getImage({
     src: meta,
-    width: Math.min(fallbackWidth(fallbackDescriptor), meta.width),
+    width: Math.min(fallbackWidth(fallbackDescriptor), nativeWidth),
     widths,
     format: 'webp',
     quality,
@@ -101,10 +127,15 @@ async function makeSrcSet(
   };
 }
 
-async function singleWebp(meta: ImageMetadata, width: number, quality: number): Promise<string> {
+async function singleWebp(
+  meta: ImageMetadata,
+  width: number,
+  quality: number,
+  nativeWidth: number,
+): Promise<string> {
   const generated = await getImage({
     src: meta,
-    width: Math.min(width, meta.width),
+    width: Math.min(width, nativeWidth),
     format: 'webp',
     quality,
   });
@@ -117,14 +148,14 @@ async function buildEntries(
 ): Promise<ArtworkImage[]> {
   const entries = await Promise.all(
     Object.entries(modules).map(async ([filePath, meta]) => {
-      const [grid, page, modal, full, placeholder] = await Promise.all([
-        makeSrcSet(meta, GRID_WIDTHS, GRID_QUALITY, '800w'),
+      const master = await readMaster(meta);
+      const [grid, page, modal, full] = await Promise.all([
+        makeSrcSet(meta, GRID_WIDTHS, GRID_QUALITY, '800w', master.width),
         options.page
-          ? makeSrcSet(meta, PAGE_WIDTHS, PAGE_QUALITY, '1600w')
+          ? makeSrcSet(meta, PAGE_WIDTHS, PAGE_QUALITY, '1600w', master.width)
           : Promise.resolve(null),
-        singleWebp(meta, MODAL_WIDTH, MODAL_QUALITY),
-        singleWebp(meta, FULL_WIDTH, FULL_QUALITY),
-        placeholderFor(filePath),
+        singleWebp(meta, MODAL_WIDTH, MODAL_QUALITY, master.width),
+        singleWebp(meta, FULL_WIDTH, FULL_QUALITY, master.width),
       ]);
       return {
         label: labelOf(filePath),
@@ -135,9 +166,9 @@ async function buildEntries(
         pageSrcSet: page?.srcset,
         modal,
         full,
-        width: meta.width,
-        height: meta.height,
-        placeholder,
+        width: master.width,
+        height: master.height,
+        placeholder: master.placeholder,
       } satisfies ArtworkImage;
     }),
   );

@@ -25,8 +25,14 @@ const {
   class: className,
 } = Astro.props;
 
+// Letterboxed pictures (object-contain) must not paint the blur in the empty
+// part of the frame. The blur is removed once the real file has loaded, so a
+// leftover strip cannot stay on screen.
+const contained = (className ?? '').includes('object-contain');
 const background = placeholder
-  ? `background-image:url("${placeholder}");background-size:cover;background-position:center;`
+  ? contained
+    ? `background-image:url("${placeholder}");background-size:contain;background-repeat:no-repeat;background-position:center;background-origin:content-box;background-clip:content-box;`
+    : `background-image:url("${placeholder}");background-size:cover;background-repeat:no-repeat;background-position:center;`
   : undefined;
 ---
 
@@ -42,4 +48,5 @@ const background = placeholder
   fetchpriority={fetchpriority}
   class:list={[className]}
   style={background}
+  onload={placeholder ? "this.style.backgroundImage='none'" : undefined}
 />

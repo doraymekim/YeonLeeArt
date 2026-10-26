@@ -3,7 +3,11 @@
   let activeCollection = null;
   let currentIndex = 0;
   let currentLang = 'ko'; // Default language state ('ko' or 'en')
-  let mainImageToken = 0;
+  // The detail view and the fullscreen view load separately. One shared
+  // counter made opening fullscreen cancel the detail swap, so a slow
+  // connection could leave the lightbox on the soft 800px preview.
+  let detailImageToken = 0;
+  let fullscreenImageToken = 0;
 
   function sameResource(a, b) {
     if (!a || !b) return false;
@@ -17,14 +21,14 @@
   // Show the picture the visitor already has (the grid thumbnail), then
   // swap in the detail file once it has loaded. The detail file is the
   // same tier as before; it just no longer blocks the first paint.
-  function showWhenReady(img, previewSrc, nextSrc, token) {
+  function showWhenReady(img, previewSrc, nextSrc, token, currentToken) {
     if (!img) return;
     img.src = previewSrc || nextSrc || '';
     if (!nextSrc || sameResource(nextSrc, img.src)) return;
     const loader = new Image();
     loader.decoding = 'async';
     loader.onload = () => {
-      if (token !== mainImageToken) return;
+      if (token !== currentToken()) return;
       img.src = nextSrc;
     };
     loader.src = nextSrc;
@@ -216,10 +220,16 @@
       // fullscreen file (up to 2560px, WebP quality 90, never larger than
       // the painting's real pixels).
       const item = activeCollection?.items?.[currentIndex];
-      const token = ++mainImageToken;
+      const token = ++fullscreenImageToken;
       fullscreenImg.alt = mainImg.alt || 'Full screen painting view';
       fullscreenOverlay.style.display = 'flex';
-      showWhenReady(fullscreenImg, mainImg.currentSrc || mainImg.src, item?.full || mainImg.src, token);
+      showWhenReady(
+        fullscreenImg,
+        mainImg.currentSrc || mainImg.src,
+        item?.full || mainImg.src,
+        token,
+        () => fullscreenImageToken,
+      );
     }
 
     function closeFullscreen() {
@@ -319,11 +329,11 @@ if (isCurrentlyKoreanText) {
     const thumbContainer = document.getElementById('gallery-thumbnails-container');
 
     if (mainImg) {
-      const token = ++mainImageToken;
+      const token = ++detailImageToken;
       const preview = cachedPreview || item.thumb || item.modal || item.src;
       const detail = item.modal || item.src;
       mainImg.alt = item.title;
-      showWhenReady(mainImg, preview, detail, token);
+      showWhenReady(mainImg, preview, detail, token, () => detailImageToken);
     }
 
     if (categoryEl) {

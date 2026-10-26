@@ -3,7 +3,7 @@
 // import with the sharp service; prerender then drained the event loop and
 // `astro build` exited 0 with dist/ containing no HTML. Cloudflare deployed
 // that empty output. This check runs after `astro build` so that case fails.
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,9 +44,56 @@ export function assertEmittedPages(distDir = path.resolve('dist')) {
   return true;
 }
 
+const RASTER = /\.(jpe?g|png)$/i;
+
+function walk(dir) {
+  const found = [];
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return found;
+  }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) found.push(...walk(full));
+    else found.push(full);
+  }
+  return found;
+}
+
+// Print masters must not be uploaded when no page, lightbox, or fullscreen
+// view links to them. Astro emits them and then deletes the unreferenced
+// ones; this catches a build that kept them anyway.
+export function assertNoUnreferencedMasters(distDir = path.resolve('dist')) {
+  const files = walk(distDir);
+  let text = '';
+  for (const file of files) {
+    if (/\.(html|js|css)$/i.test(file)) text += readFileSync(file, 'utf8');
+  }
+  const leaked = files.filter((file) => {
+    if (!RASTER.test(file)) return false;
+    const name = path.basename(file);
+    return !text.includes(name) && !text.includes(encodeURIComponent(name));
+  });
+  if (leaked.length === 0) return true;
+  const bytes = leaked.reduce((sum, file) => {
+    try {
+      return sum + statSync(file).size;
+    } catch {
+      return sum;
+    }
+  }, 0);
+  console.error(
+    `Refusing to succeed: ${leaked.length} full-size original(s) (${bytes} bytes) are in ${distDir} and no page links to them.`,
+  );
+  for (const file of leaked.slice(0, 8)) console.error(`  ${path.relative(distDir, file)}`);
+  return false;
+}
+
 const invokedDirectly =
   process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-if (invokedDirectly && !assertEmittedPages()) {
+if (invokedDirectly && (!assertEmittedPages() || !assertNoUnreferencedMasters())) {
   process.exit(1);
 }
