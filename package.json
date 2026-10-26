@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "prebuild": "astro check",
-    "build": "astro build",
+    "build": "astro build && node scripts/assert-emitted-pages.mjs",
     "build:light": "FORCE_THEME=light yarn build",
     "build:dark": "FORCE_THEME=dark yarn build",
     "preview": "astro preview"
@@ -27,11 +27,13 @@
     "astro": "^5.10.2"
   },
   "overrides": {
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.0",
+    "rollup": "^4.64.12"
   },
   "resolutions": {
     "astro/sharp": "0.33.1",
-    "astro-compress/sharp": "0.33.1"
+    "astro-compress/sharp": "0.33.1",
+    "rollup": "^4.64.12"
   },
   "packageManager": "yarn@4.17.1"
 }
