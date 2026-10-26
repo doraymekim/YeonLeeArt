@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "prebuild": "astro check",
-    "build": "astro build",
+    "build": "astro build && node scripts/assert-emitted-pages.mjs",
     "build:light": "FORCE_THEME=light yarn build",
     "build:dark": "FORCE_THEME=dark yarn build",
     "preview": "astro preview"

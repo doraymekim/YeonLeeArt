@@ -13,7 +13,14 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - run: yarn install --frozen-lockfile
+      # package.json requires Yarn 4.17.1 via "packageManager". The runner's
+      # preinstalled Yarn is 1.x and refuses to install until Corepack is on.
+      - name: Use Yarn 4 via Corepack
+        run: |
+          corepack enable
+          yarn --version
+
+      - run: yarn install --immutable
 
       - run: yarn astro check
 
@@ -29,7 +36,12 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - run: yarn install --frozen-lockfile
+      - name: Use Yarn 4 via Corepack
+        run: |
+          corepack enable
+          yarn --version
+
+      - run: yarn install --immutable
 
       - run: yarn add @percy/cli -D
 
