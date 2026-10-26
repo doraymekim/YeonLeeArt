@@ -3,6 +3,36 @@
   let activeCollection = null;
   let currentIndex = 0;
   let currentLang = 'ko'; // Default language state ('ko' or 'en')
+  // The detail view and the fullscreen view load separately. One shared
+  // counter made opening fullscreen cancel the detail swap, so a slow
+  // connection could leave the lightbox on the soft 800px preview.
+  let detailImageToken = 0;
+  let fullscreenImageToken = 0;
+
+  function sameResource(a, b) {
+    if (!a || !b) return false;
+    try {
+      return new URL(a, window.location.href).pathname === new URL(b, window.location.href).pathname;
+    } catch {
+      return a === b;
+    }
+  }
+
+  // Show the picture the visitor already has (the grid thumbnail), then
+  // swap in the detail file once it has loaded. The detail file is the
+  // same tier as before; it just no longer blocks the first paint.
+  function showWhenReady(img, previewSrc, nextSrc, token, currentToken) {
+    if (!img) return;
+    img.src = previewSrc || nextSrc || '';
+    if (!nextSrc || sameResource(nextSrc, img.src)) return;
+    const loader = new Image();
+    loader.decoding = 'async';
+    loader.onload = () => {
+      if (token !== currentToken()) return;
+      img.src = nextSrc;
+    };
+    loader.src = nextSrc;
+  }
 
   function createModal() {
     // If an existing modal is in DOM, remove it to ensure fresh structure
@@ -186,12 +216,20 @@
 
     function openFullscreen() {
       if (!mainImg || !mainImg.src) return;
-      // Use the high-resolution (~2560w) derivative when the payload provides
-      // one; older payloads only carry `src`, which is already the modal tier.
+      // Keep the detail view on screen immediately, then swap in the
+      // fullscreen file (up to 2560px, WebP quality 90, never larger than
+      // the painting's real pixels).
       const item = activeCollection?.items?.[currentIndex];
-      fullscreenImg.src = item?.full || mainImg.src;
+      const token = ++fullscreenImageToken;
       fullscreenImg.alt = mainImg.alt || 'Full screen painting view';
       fullscreenOverlay.style.display = 'flex';
+      showWhenReady(
+        fullscreenImg,
+        mainImg.currentSrc || mainImg.src,
+        item?.full || mainImg.src,
+        token,
+        () => fullscreenImageToken,
+      );
     }
 
     function closeFullscreen() {
@@ -275,7 +313,7 @@ if (isCurrentlyKoreanText) {
     }
   }
 
-  function renderModalContent() {
+  function renderModalContent(cachedPreview) {
     if (!activeCollection || !activeCollection.items || !activeCollection.items.length) return;
 
     const item = activeCollection.items[currentIndex];
@@ -291,8 +329,11 @@ if (isCurrentlyKoreanText) {
     const thumbContainer = document.getElementById('gallery-thumbnails-container');
 
     if (mainImg) {
-      mainImg.src = item.modal || item.src;
+      const token = ++detailImageToken;
+      const preview = cachedPreview || item.thumb || item.modal || item.src;
+      const detail = item.modal || item.src;
       mainImg.alt = item.title;
+      showWhenReady(mainImg, preview, detail, token, () => detailImageToken);
     }
 
     if (categoryEl) {
@@ -404,11 +445,11 @@ if (isCurrentlyKoreanText) {
     }
   }
 
-  function openModal(collectionTitle, items, startIndex = 0) {
+  function openModal(collectionTitle, items, startIndex = 0, cachedPreview) {
     createModal();
     activeCollection = { collectionTitle, items };
     currentIndex = startIndex;
-    renderModalContent();
+    renderModalContent(cachedPreview);
 
     modalContainer.classList.remove('opacity-0', 'pointer-events-none');
     modalContainer.classList.add('opacity-100');
@@ -450,7 +491,17 @@ if (isCurrentlyKoreanText) {
       try {
         const items = JSON.parse(rawItems);
         if (Array.isArray(items) && items.length > 0) {
-          openModal(title, items, 0);
+          const clicked = e.target.closest('img') || trigger.querySelector('img');
+          const first = items[0];
+          const alt = (clicked?.getAttribute('alt') || '').toLowerCase();
+          const titleText = (first.title || '').toLowerCase();
+          // Only reuse the on-screen bitmap when it is the painting the
+          // lightbox will open on. A series card always opens on the first
+          // study, which may not be the slide currently showing.
+          const previewMatchesFirst =
+            clicked && (items.length === 1 || (alt && titleText && alt === titleText));
+          const cachedPreview = previewMatchesFirst ? clicked.currentSrc || clicked.src : undefined;
+          openModal(title, items, 0, cachedPreview);
           return;
         }
       } catch (err) {

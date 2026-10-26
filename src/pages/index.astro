@@ -5,6 +5,7 @@ import AboutModal from '../components/AboutModal.astro';
 import { PERSONAL_INFO } from '../consts';
 import { ARTWORK_METADATA } from '../data/artworks.ts';
 import ContactModal from '../components/ContactModal.astro'; // <-- Add this line
+import ResponsiveImage from '../components/ResponsiveImage.astro';
 import { ARTWORK_IMAGES, findArtwork, findArtworks, type ArtworkImage } from '../lib/images';
 
 // Helper to format artwork item with full metadata payload & fallback compatibility keys.
@@ -47,14 +48,14 @@ const publicImages = ARTWORK_IMAGES;
 
 // Fading slideshow images for the About modal (grid tier is plenty here)
 const bioCarouselImages = [
-  findArtwork('balloon trail mom')?.grid,
-  findArtwork('bom and mom')?.grid,
-  findArtwork('italian journey mom')?.grid,
-  findArtwork('yeon joo lee headshot photo')?.grid,
-].filter(Boolean) as string[];
+  findArtwork('balloon trail mom'),
+  findArtwork('bom and mom'),
+  findArtwork('italian journey mom'),
+  findArtwork('yeon joo lee headshot photo'),
+].filter((img): img is ArtworkImage => Boolean(img));
 
 // Background watermark image
-const bioBgImage = findArtwork('yeon joo lee headshot photo 2')?.grid;
+const bioBgImage = findArtwork('yeon joo lee headshot photo 2');
 
 // Helper to bundle collection items case-insensitively
 const findCollectionImages = (labels: string[]) => findArtworks(labels);
@@ -257,12 +258,20 @@ const galleryImages: GalleryImage[] = publicImages.map((image) => {
               Featured Work
             </div>
 
-            <img
-              src={yeoReumImg?.grid}
-              alt="YeoReum by Yeon Joo Lee"
-              fetchpriority="high"
-              class="h-full w-full rounded-lg object-contain"
-            />
+            {yeoReumImg && (
+              <ResponsiveImage
+                src={yeoReumImg.grid}
+                srcset={yeoReumImg.gridSrcSet}
+                width={yeoReumImg.width}
+                height={yeoReumImg.height}
+                placeholder={yeoReumImg.placeholder}
+                alt="YeoReum by Yeon Joo Lee"
+                sizes="(min-width: 1024px) 42vw, calc(100vw - 4.5rem)"
+                loading="eager"
+                fetchpriority="high"
+                class="h-full w-full rounded-lg object-contain"
+              />
+            )}
           </div>
         </div>
 
@@ -328,13 +337,18 @@ const galleryImages: GalleryImage[] = publicImages.map((image) => {
                 tabindex="0"
               >
                 <div class="aspect-[3/4] w-full overflow-hidden rounded-xl bg-slate-950">
-                  <img
-                    src={variantImg?.grid}
-                    alt={`Whistle ${variant.title}`}
-                    loading="lazy"
-                    decoding="async"
-                    class="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                  />
+                  {variantImg && (
+                    <ResponsiveImage
+                      src={variantImg.grid}
+                      srcset={variantImg.gridSrcSet}
+                      width={variantImg.width}
+                      height={variantImg.height}
+                      placeholder={variantImg.placeholder}
+                      alt={`Whistle ${variant.title}`}
+                      sizes="(min-width: 1024px) 14vw, (min-width: 640px) 30vw, 46vw"
+                      class="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                    />
+                  )}
                 </div>
                 
                 <div class="mt-2.5 flex items-center justify-between px-1 pb-1">
@@ -437,23 +451,31 @@ const galleryImages: GalleryImage[] = publicImages.map((image) => {
                       {isAnimatedCollection ? (
                         <div class="collection-slideshow relative h-full w-full">
                           {image.subGallery!.map((subItem, idx) => (
-                            <img
+                            <ResponsiveImage
                               src={subItem.grid}
+                              srcset={subItem.gridSrcSet}
+                              width={subItem.width}
+                              height={subItem.height}
+                              placeholder={subItem.placeholder}
                               alt={subItem.label}
-                              width="800"
-                              loading="lazy"
-                              decoding="async"
+                              sizes={isHorizontal
+                                ? '(min-width: 1024px) 46vw, (min-width: 640px) 92vw, calc(100vw - 3rem)'
+                                : '(min-width: 1024px) 22vw, (min-width: 640px) 45vw, calc(100vw - 3rem)'}
                               class={`card-slide absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${idx === 0 ? 'opacity-100' : 'opacity-0'}`}
                             />
                           ))}
                         </div>
                       ) : (
-                        <img
+                        <ResponsiveImage
                           src={image.grid}
+                          srcset={image.gridSrcSet}
+                          width={image.width}
+                          height={image.height}
+                          placeholder={image.placeholder}
                           alt={collectionTitle}
-                          width="800"
-                          loading="lazy"
-                          decoding="async"
+                          sizes={isHorizontal
+                            ? '(min-width: 1024px) 46vw, (min-width: 640px) 92vw, calc(100vw - 3rem)'
+                            : '(min-width: 1024px) 22vw, (min-width: 640px) 45vw, calc(100vw - 3rem)'}
                           class="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
                         />
                       )}
