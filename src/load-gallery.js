@@ -344,6 +344,9 @@ if (isCurrentlyKoreanText) {
 
     if (titleEl) {
       titleEl.textContent = item.title;
+      // Cormorant Garamond's oldstyle "1" reads as a small-cap I.
+      // Only a title that contains a digit opts into lining figures.
+      titleEl.classList.toggle('title-lining-nums', /\d/.test(item.title || ''));
     }
 
     // Year
@@ -356,11 +359,9 @@ if (isCurrentlyKoreanText) {
       }
     }
 
-    // Price / Status. Sold works keep a price in the data and still show the
-    // same SOLD badge as Heart Tree (status wins over the dollar amount).
+    // Price / Status
     if (priceEl) {
-      const sold = (item.status || '').toLowerCase() === 'sold';
-      const priceVal = sold ? item.status : item.price || item.status;
+      const priceVal = item.price || item.status;
       if (priceVal) {
         priceEl.textContent = priceVal.toUpperCase();
         priceEl.classList.remove('hidden');

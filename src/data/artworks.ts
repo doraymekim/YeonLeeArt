@@ -362,7 +362,6 @@ export const ARTWORK_METADATA: Record<string, ArtworkDetails> = {
   'just beyond, episode 1': {
     title: 'Just Beyond, Episode 1',
     year: '2026',
-    price: '$10,000',
     status: 'Sold',
     dimensions: '48 x 24 in',
     medium: 'Acrylic on Canvas 1.5 depth',
