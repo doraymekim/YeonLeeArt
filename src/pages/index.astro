@@ -417,7 +417,8 @@ const galleryImages: GalleryImage[] = publicImages.map((image) => {
                 image.label === 'Cactus Magnum' ||
                 image.label === 'Camelia' ||
                 image.label === 'Dandelion' ||
-                image.label === 'Nocturne';
+                image.label === 'Nocturne' ||
+                image.label === 'Just Beyond, Episode 1';
 
               const isCollection = !!image.subGallery;
               const isAnimatedCollection = isCollection && collectionTitle !== 'Cactus' && collectionTitle !== 'Nocturne';
@@ -490,7 +491,12 @@ const galleryImages: GalleryImage[] = publicImages.map((image) => {
                             <span class="animate-collection-text font-normal">Collection</span>
                           </>
                         ) : (
-                          <span class="group-hover/card:text-[#81d8d0] transition duration-300">{image.label}</span>
+                          <span
+                            class:list={[
+                              'group-hover/card:text-[#81d8d0] transition duration-300',
+                              /\d/.test(image.label) && 'title-lining-nums',
+                            ]}
+                          >{image.label}</span>
                         )}
                       </p>
 
@@ -590,6 +596,8 @@ const galleryImages: GalleryImage[] = publicImages.map((image) => {
 
   html { scroll-behavior: smooth; }
   .font-serif-tiffany { font-family: 'Cormorant Garamond', Georgia, serif !important; }
+  /* Scoped to titles that contain a digit. Other titles have none, so they never get this class. */
+  .title-lining-nums { font-variant-numeric: lining-nums; }
   .font-sans-tiffany { font-family: 'Inter', system-ui, sans-serif !important; }
   .font-paperlogy { font-family: 'Paperlogy', 'Inter', system-ui, sans-serif !important; }
 

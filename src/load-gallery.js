@@ -344,6 +344,9 @@ if (isCurrentlyKoreanText) {
 
     if (titleEl) {
       titleEl.textContent = item.title;
+      // Cormorant Garamond's oldstyle "1" reads as a small-cap I.
+      // Only a title that contains a digit opts into lining figures.
+      titleEl.classList.toggle('title-lining-nums', /\d/.test(item.title || ''));
     }
 
     // Year

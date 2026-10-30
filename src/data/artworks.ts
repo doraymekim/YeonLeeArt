@@ -135,6 +135,15 @@ const BREATH_STATEMENT_KO = `옐로우스톤 여행 중 가이저를 보며 느�
 
 const BREATH_STATEMENT_EN = `While watching the geysers during a trip to Yellowstone, a realization washed over me: the Earth beneath my feet is busily breathing, just like I am. It felt like a grand pulse announcing that our planet is truly alive. The Grand Prismatic Spring—where extremophile microorganisms seem to embroider the terrain with their own colors and designs—felt so mysterious and surreal, as if I had stepped onto another planet. This piece captures "Breath"—a shared connection with our beautiful, living Earth, which has breathed in the past, breathes now, and will continue to breathe into the future.`;
 
+// --- "JUST BEYOND, EPISODE 1" STATEMENTS ---
+const JUST_BEYOND_EPISODE_1_STATEMENT_EN = `This painting whispers to us: "Find your own hidden story held within these countless touches of light, and envision the endless dreams waiting just beyond the landscape."
+
+I hope this work acts as a warm breeze soothing weary hearts, and a song of dreams that stirs the boundless potential resting within us.`;
+
+const JUST_BEYOND_EPISODE_1_STATEMENT_KO = `이 그림은 우리에게 속삭입니다. "수많은 빛의 손길 속에 숨겨진 나만의 이야기를 찾아보세요. 그리고 풍경 너머에서 기다리는 끝없는 꿈들을 그려 보세요."
+
+이 작품이 지친 마음을 어루만지는 따뜻한 바람이 되고, 우리 안에 잠든 무한한 가능성을 깨우는 꿈의 노래가 되기를 바랍니다.`;
+
 // --- ARTIST ABOUT / POPUP STATEMENTS ---
 
 export const ARTIST_ABOUT_KO = `난 사랑하는 이들을 위해 요리하는 것을 좋아하는 사람이다. 가족을 포함하여 누군가를 위해 식탁을 차린다는 것은 정성이라는 그릇에 사랑과 관심을 담아내는 것이라 믿기에, 때론 번거로울 때도 있지만 나에겐 참 의미 있는 일이 아닐 수 없다.
@@ -349,6 +358,15 @@ export const ARTWORK_METADATA: Record<string, ArtworkDetails> = {
     exhibition: 'HelvetArt 1st Place (Feb 2022) • Camelback Bronze (Dec 2021) • Art Show Intl Solo (Dec 2021) • LA Art Show (Feb 2023)',
     statementEn: ITALIAN_JOURNEY_STATEMENT_EN,
     statementKo: ITALIAN_JOURNEY_STATEMENT_KO,
+  },
+  'just beyond, episode 1': {
+    title: 'Just Beyond, Episode 1',
+    year: '2026',
+    status: 'Sold',
+    dimensions: '48 x 24 in',
+    medium: 'Acrylic on Canvas 1.5 depth',
+    statementEn: JUST_BEYOND_EPISODE_1_STATEMENT_EN,
+    statementKo: JUST_BEYOND_EPISODE_1_STATEMENT_KO,
   },
   'kaleidoscope': {
     title: 'Kaleidoscope',
