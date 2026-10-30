@@ -356,9 +356,11 @@ if (isCurrentlyKoreanText) {
       }
     }
 
-    // Price / Status
+    // Price / Status. Sold works keep a price in the data and still show the
+    // same SOLD badge as Heart Tree (status wins over the dollar amount).
     if (priceEl) {
-      const priceVal = item.price || item.status;
+      const sold = (item.status || '').toLowerCase() === 'sold';
+      const priceVal = sold ? item.status : item.price || item.status;
       if (priceVal) {
         priceEl.textContent = priceVal.toUpperCase();
         priceEl.classList.remove('hidden');

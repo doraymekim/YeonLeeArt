@@ -3,7 +3,7 @@
 // import with the sharp service; prerender then drained the event loop and
 // `astro build` exited 0 with dist/ containing no HTML. Cloudflare deployed
 // that empty output. This check runs after `astro build` so that case fails.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -45,6 +45,48 @@ export function assertEmittedPages(distDir = path.resolve('dist')) {
 }
 
 const RASTER = /\.(jpe?g|png)$/i;
+
+// Full-size originals kept in public/ so they are in the git repo. Astro copies
+// public/ into dist, which would upload them and fail the master check below.
+// Nothing on the site should link to these names; pages use resized WebP.
+export const REPO_ONLY_PUBLIC_ORIGINALS = [
+  'whistle-sunset.jpg',
+  'just-beyond-episode-1.jpg',
+];
+
+export function removeRepoOnlyOriginals(distDir = path.resolve('dist')) {
+  for (const name of REPO_ONLY_PUBLIC_ORIGINALS) {
+    const full = path.join(distDir, name);
+    if (existsSync(full)) unlinkSync(full);
+  }
+}
+
+export function assertRepoOriginalsNotServed(distDir = path.resolve('dist')) {
+  const stillThere = REPO_ONLY_PUBLIC_ORIGINALS.filter((name) =>
+    existsSync(path.join(distDir, name)),
+  );
+  if (stillThere.length > 0) {
+    console.error(
+      `Refusing to succeed: full-size original(s) are still in ${distDir}: ${stillThere.join(', ')}`,
+    );
+    return false;
+  }
+
+  let text = '';
+  for (const file of walk(distDir)) {
+    if (/\.(html|js|css)$/i.test(file)) text += readFileSync(file, 'utf8');
+  }
+  const referenced = REPO_ONLY_PUBLIC_ORIGINALS.filter(
+    (name) => text.includes(name) || text.includes(encodeURIComponent(name)),
+  );
+  if (referenced.length > 0) {
+    console.error(
+      `Refusing to succeed: a page links to a full-size original: ${referenced.join(', ')}`,
+    );
+    return false;
+  }
+  return true;
+}
 
 function walk(dir) {
   const found = [];
@@ -94,6 +136,13 @@ export function assertNoUnreferencedMasters(distDir = path.resolve('dist')) {
 const invokedDirectly =
   process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-if (invokedDirectly && (!assertEmittedPages() || !assertNoUnreferencedMasters())) {
-  process.exit(1);
+if (invokedDirectly) {
+  removeRepoOnlyOriginals();
+  if (
+    !assertEmittedPages() ||
+    !assertRepoOriginalsNotServed() ||
+    !assertNoUnreferencedMasters()
+  ) {
+    process.exit(1);
+  }
 }
